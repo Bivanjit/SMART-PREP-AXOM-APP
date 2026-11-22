@@ -10,7 +10,7 @@
       "package": "com.smartprepaxom.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#071B42"
+        "backgroundColor": "#8060C8"
       }
     },
     "plugins": [
