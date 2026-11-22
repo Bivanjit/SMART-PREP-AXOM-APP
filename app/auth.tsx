@@ -1,115 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { Heading, Copy, Panel, Button } from '../components/ui';
-import { sendEmailCode, signOut, verifyEmailCode } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 import { useTheme } from './_layout';
 
 export default function AuthScreen() {
-  const { c } = useTheme();
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [sent, setSent] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!supabase) return;
-    void supabase.auth.getUser().then(({ data }) => setSignedInEmail(data.user?.email ?? null));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSignedInEmail(session?.user?.email ?? null);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  async function requestCode() {
-    setBusy(true);
-    try {
-      const normalized = await sendEmailCode(email);
-      setEmail(normalized);
-      setSent(true);
-      Alert.alert('Check your email', 'Enter the sign-in code sent to your inbox.');
-    } catch (error) {
-      Alert.alert('Could not send code', error instanceof Error ? error.message : 'Please try again.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function confirmCode() {
-    setBusy(true);
-    try {
-      await verifyEmailCode(email, code);
-      Alert.alert('Signed in', 'Your SmartPrep account is ready.');
-      router.back();
-    } catch (error) {
-      Alert.alert('Code not accepted', error instanceof Error ? error.message : 'Check the code and try again.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleSignOut() {
-    setBusy(true);
-    try {
-      await signOut();
-      setSignedInEmail(null);
-    } catch (error) {
-      Alert.alert('Could not sign out', error instanceof Error ? error.message : 'Please try again.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <KeyboardAvoidingView style={{ flex:  1, backgroundColor: c.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={{ padding: 22, paddingTop: 34, gap: 16 }}>
-        <Copy>SMARTPREP AXOM ACCOUNT</Copy>
-        <Heading>One account. Your preparation, synced.</Heading>
-        {!supabase ? (
-          <Panel><Copy>Backend configuration is missing. Add the Supabase URL and publishable key to your local environment, then restart Expo.</Copy></Panel>
-        ) : signedInEmail ? (
-          <Panel>
-            <Copy>YOU ARE SIGNED IN AS</Copy>
-            <Text style={{ color: c.text, fontSize: 16, fontWeight: '700' }}>{signedInEmail}</Text>
-            <Button title="Sign out" onPress={handleSignOut} />
-          </Panel>
-        ) : (
-          <Panel>
-            <Copy>Sign in or create a free account using your email. We will send a one-time code.</Copy>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              editable={!sent && !busy}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              placeholder="you@example.com"
-              placeholderTextColor={c.muted}
-              style={{ borderWidth: 1, borderColor: c.border, color: c.text, backgroundColor: c.bg, borderRadius: 12, padding: 14, fontSize: 16 }}
-            />
-            {sent ? (
-              <>
-                <TextInput
-                  value={code}
-                  onChangeText={setCode}
-                  keyboardType="number-pad"
-                  maxLength={8}
-                  placeholder="Enter email code"
-                  placeholderTextColor={c.muted}
-                  style={{ borderWidth: 1, borderColor: c.border, color: c.text, backgroundColor: c.bg, borderRadius: 12, padding: 14, fontSize: 16, letterSpacing: 4 }}
-                />
-                <Button title={busy ? 'Verifying…' : 'Verify code'} onPress={confirmCode} />
-                <Button title="Use another email" onPress={() => { setSent(false); setCode(''); }} />
-              </>
-            ) : (
-              <Button title={busy ? 'Sending…' : 'Send sign-in code'} onPress={requestCode} />
-            )}
-          </Panel>
-        )}
-        <Copy>Email OTP delivery depends on the email provider and rate limits configured in Supabase Auth.</Copy>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+ const {c}=useTheme(); const [email,setEmail]=useState(''); const [password,setPassword]=useState('');
+ const [mode,setMode]=useState<'signin'|'signup'>('signin'); const [busy,setBusy]=useState(false); const [signedIn,setSignedIn]=useState<string|null>(null);
+ useEffect(()=>{if(!supabase)return;void supabase.auth.getUser().then(({data})=>setSignedIn(data.user?.email??null));const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>setSignedIn(s?.user?.email??null));return()=>subscription.unsubscribe()},[]);
+ const style={borderWidth:1,borderColor:c.border,color:c.text,backgroundColor:c.bg,borderRadius:12,padding:14,fontSize:16};
+ async function submit(){if(!supabase)return;setBusy(true);try{const normalized=email.trim().toLowerCase();if(mode==='signup'){const {data,error}=await supabase.auth.signUp({email:normalized,password});if(error)throw error;if(!data.session){Alert.alert('Account created','If sign-in asks for email confirmation, the owner must turn off Confirm email in Supabase Auth settings for this first release.');}else{Alert.alert('Account created','Your SmartPrep account is ready.');router.back();}}else{const {error}=await supabase.auth.signInWithPassword({email:normalized,password});if(error)throw error;Alert.alert('Welcome back','You are signed in.');router.back();}}catch(e){Alert.alert('Account error',e instanceof Error?e.message:'Please try again.')}finally{setBusy(false)}}
+ async function logout(){await supabase?.auth.signOut();setSignedIn(null)}
+ return <KeyboardAvoidingView style={{flex:1,backgroundColor:c.bg}} behavior={Platform.OS==='ios'?'padding':undefined}><ScrollView contentContainerStyle={{padding:22,paddingTop:34,gap:16}}><Copy>SMARTPREP AXOM ACCOUNT</Copy><Heading>One account. Your preparation, synced.</Heading>{!supabase?<Panel><Copy>Backend configuration is missing. Add the Supabase URL and publishable key to the app build environment.</Copy></Panel>:signedIn?<Panel><Copy>SIGNED IN AS</Copy><Text style={{color:c.text,fontSize:16,fontWeight:'700'}}>{signedIn}</Text><Button title="Sign out" onPress={logout}/></Panel>:<Panel><Copy>{mode==='signin'?'Sign in to sync your preparation across devices.':'Create your free SmartPrep account.'} Email verification is intentionally not part of this first version.</Copy><TextInput style={style} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="you@example.com" placeholderTextColor={c.muted}/><TextInput style={style} value={password} onChangeText={setPassword} secureTextEntry placeholder="Password (8+ characters)" placeholderTextColor={c.muted}/><Button title={busy?'Please wait…':mode==='signin'?'Sign in':'Create account'} onPress={submit}/><Button title={mode==='signin'?'Create a new account':'I already have an account'} onPress={()=>setMode(mode==='signin'?'signup':'signin')}/></Panel>}<Copy>Use a valid email address and a strong password. Do not share your password or verification codes.</Copy></ScrollView></KeyboardAvoidingView>;
 }
