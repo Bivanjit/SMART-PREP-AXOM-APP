@@ -13,7 +13,7 @@ export default function Profile(){
  const load=useCallback(async()=>{if(!supabase||!userId){setMembership('Free account');return;}const [{data:profile,error:profileError},{data:userData},{data:member},{data:best,count}] = await Promise.all([
   supabase.from('profiles').select('display_name,avatar_path').eq('id',userId).maybeSingle(),
   supabase.auth.getUser(),
-  supabase.from('memberships').select('product_code,status,expires_at').eq('user_id',userId).eq('status','active').gt('expires_at',new Date().toISOString()).order('expires_at',{ascending:false}).limit(1).maybeSingle(),
+  supabase.from('memberships').select('product_code,status,expires_at').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).order('expires_at',{ascending:false}).limit(1).maybeSingle(),
   supabase.from('attempts').select('score,max_score',{count:'exact'}).eq('user_id',userId).order('score',{ascending:false}).limit(1)
  ]);
  if(profileError)console.warn('Profile read:',profileError.message);
