@@ -17,7 +17,7 @@ export async function loadTestQuestions(testId:string){
 export async function submitServerAttempt(args:{testId?:string;questionIds:string[];answers:{question_id:string;selected_answer:string|null}[];title:string}){
  if(!supabase) throw new Error('Backend is not configured.');
  const {data:{session}}=await supabase.auth.getSession();
- if(!session) throw new Error('Sign in before submitting a practice session.');
+ if(!session&&args.testId) throw new Error('Sign in before submitting a full mock test. Free chapter practice is available to guests.');
  const {data,error}=await supabase.functions.invoke('submit-attempt',{body:{test_id:args.testId,question_ids:args.questionIds,title:args.title,answers:args.answers}});
  if(error) throw error;
  if(data?.error) throw new Error(data.error);
