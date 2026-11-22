@@ -1,13 +1,12 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {Tabs,router} from 'expo-router';
-import {Pressable,Modal,View,Text,ScrollView,Dimensions,Animated,Easing} from 'react-native';
+import {Pressable,Modal,View,Text,ScrollView,Animated,Easing,useWindowDimensions} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../_layout';
-const W=Dimensions.get('window').width;
 type Icon=keyof typeof Ionicons.glyphMap;
 export default function TabsLayout(){
- const {c,userEmail,mode,setMode}=useTheme();const insets=useSafeAreaInsets();const [open,setOpen]=useState(false);
+ const {c,userEmail,mode,setMode}=useTheme();const insets=useSafeAreaInsets();const {width:W}=useWindowDimensions();const [open,setOpen]=useState(false);
  const translateX=useRef(new Animated.Value(-Math.max(200,Math.min(W*.52,300)))).current;
  const backdrop=useRef(new Animated.Value(0)).current;
  const drawerWidth=Math.max(200,Math.min(W*.52,300));
@@ -17,7 +16,7 @@ export default function TabsLayout(){
  const go=(path:string)=>{close();setTimeout(()=>router.push(path as never),70)};
  const item=(icon:Icon,label:string,path:string)=><Pressable key={label} onPress={()=>go(path)} accessibilityRole="button" style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:13,paddingVertical:14,borderBottomWidth:1,borderBottomColor:c.border,opacity:pressed?.65:1})}><Ionicons name={icon} size={21} color={c.blue}/><Text style={{fontSize:15,fontWeight:'600',color:c.text}}>{label}</Text><View style={{flex:1}}/><Ionicons name="chevron-forward" size={16} color={c.muted}/></Pressable>;
  return <>
- <Tabs screenOptions={({route})=>({headerShown:true,headerTitle:route.name==='index'?'SmartPrep Axom':route.name==='batches'?'My Batches':route.name==='practice'?'Study':route.name==='insights'?'Learning insights':route.name==='tests'?'Mock tests':route.name==='lectures'?'Video lectures':'Your profile',headerTitleStyle:{fontWeight:'800',fontSize:17,color:c.text},headerStyle:{backgroundColor:c.bg},headerShadowVisible:false,headerTintColor:c.text,headerLeft:()=> <Pressable accessibilityRole="button" accessibilityLabel="Open navigation menu" onPress={()=>setOpen(true)} style={{marginLeft:14,width:40,height:40,borderRadius:12,alignItems:'center',justifyContent:'center'}}><Ionicons name="menu" size={27} color={c.text}/></Pressable>,tabBarActiveTintColor:c.blue,tabBarInactiveTintColor:c.muted,tabBarStyle:{backgroundColor:c.card,borderTopColor:c.border,height:66,paddingBottom:8,paddingTop:5},tabBarIcon:({color,size})=><Ionicons name={icons[route.name]||'ellipse-outline'} color={color} size={size}/>})}>
+ <Tabs screenOptions={({route})=>({headerShown:true,headerTitle:route.name==='index'?'SmartPrep Axom':route.name==='batches'?'My Batches':route.name==='practice'?'Study':route.name==='insights'?'Learning insights':route.name==='tests'?'Mock tests':route.name==='lectures'?'Video lectures':'Your profile',headerTitleStyle:{fontWeight:'800',fontSize:17,color:c.text},headerStyle:{backgroundColor:c.bg},headerShadowVisible:false,headerTintColor:c.text,headerLeft:()=> <Pressable accessibilityRole="button" accessibilityLabel="Open navigation menu" onPress={()=>setOpen(true)} style={{marginLeft:14,width:40,height:40,borderRadius:12,alignItems:'center',justifyContent:'center'}}><Ionicons name="menu" size={27} color={c.text}/></Pressable>,tabBarActiveTintColor:c.blue,tabBarInactiveTintColor:c.muted,tabBarStyle:{backgroundColor:c.card,borderTopColor:c.border,height:62+insets.bottom,paddingBottom:Math.max(8,insets.bottom),paddingTop:5},tabBarIcon:({color,size})=><Ionicons name={icons[route.name]||'ellipse-outline'} color={color} size={size}/>})}>
  <Tabs.Screen name="index" options={{title:'Home'}}/><Tabs.Screen name="batches" options={{title:'Batches'}}/><Tabs.Screen name="practice" options={{title:'Study'}}/><Tabs.Screen name="tests" options={{title:'Tests'}}/><Tabs.Screen name="profile" options={{title:'Profile'}}/><Tabs.Screen name="lectures" options={{href:null}}/><Tabs.Screen name="insights" options={{href:null}}/>
  </Tabs>
  <Modal visible={open} transparent animationType="none" onRequestClose={close} statusBarTranslucent>
