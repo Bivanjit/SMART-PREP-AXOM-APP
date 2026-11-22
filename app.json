@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "SmartPrep Axom",
+    "slug": "smartprep-axom",
+    "scheme": "smartprepaxom",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "package": "com.smartprepaxom.app"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
