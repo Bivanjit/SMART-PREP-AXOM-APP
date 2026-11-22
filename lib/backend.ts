@@ -1,10 +1,11 @@
 import { supabase } from './supabase';
 
 export type RemoteQuestion = {id:string;chapter_id:string;prompt:string;options:string[];chapter?:string};
-export async function loadChapterQuestions(chapterId:string){
+export async function loadChapterQuestions(chapterId:string,language:'en'|'as'='en'){
  if(!supabase) throw new Error('Backend is not configured.');
- const {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options').eq('chapter_id',chapterId).eq('is_published',true).order('created_at');
+ let {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options').eq('chapter_id',chapterId).eq('is_published',true).eq('language',language).order('created_at');
  if(error) throw error;
+ if((data||[]).length===0&&language==='as'){const fallback=await supabase.from('questions').select('id,chapter_id,prompt,options').eq('chapter_id',chapterId).eq('is_published',true).eq('language','en').order('created_at');if(fallback.error)throw fallback.error;data=fallback.data;}
  return (data||[]) as RemoteQuestion[];
 }
 export async function loadTestQuestions(testId:string){

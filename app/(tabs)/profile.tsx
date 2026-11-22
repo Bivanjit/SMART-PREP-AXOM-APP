@@ -11,7 +11,7 @@ function Row({icon,title,subtitle,onPress}:{icon:keyof typeof Ionicons.glyphMap;
 }
 function Stat({value,label}:{value:string;label:string}){const {c}=useTheme();return <View style={{flex:1,alignItems:'center',paddingVertical:12,backgroundColor:c.soft,borderRadius:12,gap:3}}><Text style={{fontSize:19,fontWeight:'900',color:c.text}}>{value}</Text><Text style={{fontSize:10,color:c.muted,fontWeight:'700'}}>{label}</Text></View>}
 export default function Profile(){
- const {c,mode,setMode,bookmarks,userEmail,userId}=useTheme();const insets=useSafeAreaInsets();
+ const {c,mode,setMode,bookmarks,userEmail,userId,language}=useTheme();const insets=useSafeAreaInsets();
  const [membership,setMembership]=useState('Checking membership…'),[avatar,setAvatar]=useState<string|null>(null),[avatarPath,setAvatarPath]=useState<string|null>(null),[name,setName]=useState(''),[verified,setVerified]=useState(false),[saving,setSaving]=useState(false),[editing,setEditing]=useState(false),[attemptCount,setAttemptCount]=useState(0),[bestScore,setBestScore]=useState<number|null>(null);
  const load=useCallback(async()=>{if(!supabase||!userId){setMembership('Free account');return;}const [{data:profile,error:profileError},{data:userData},{data:member},{data:best,count}]=await Promise.all([
   supabase.from('profiles').select('display_name,avatar_path').eq('id',userId).maybeSingle(),supabase.auth.getUser(),
