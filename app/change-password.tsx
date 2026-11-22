@@ -20,7 +20,7 @@ export default function ChangePassword(){
    try{
     if(!supabase){if(alive)setAuthenticated(false);return;}
     const [{data:{session}},{data:{user}}]=await Promise.all([supabase.auth.getSession(),supabase.auth.getUser()]);
-    if(alive){setAuthenticated(!!session&&!!user&&(!userId||user.id===userId));setEmail(user?.email||'');}
+    if(alive){setAuthenticated(!!session&&!!user&&(!!userId&&user.id===userId));setEmail(user?.email||'');}
    }catch{if(alive)setAuthenticated(false);}
    finally{if(alive)setChecking(false);}
   })();
@@ -58,7 +58,7 @@ export default function ChangePassword(){
     <TextInput style={field} value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none" placeholder="New password" placeholderTextColor={c.muted}/>
     <TextInput style={field} value={confirm} onChangeText={setConfirm} secureTextEntry autoCapitalize="none" placeholder="Confirm new password" placeholderTextColor={c.muted}/>
     <Button title={busy?'Verifying & saving…':'Verify and change password'} onPress={()=>void save()}/>
-    <Button title="Cancel" variant="secondary" onPress={()=>router.back()}/>
+    <Button title="Cancel" onPress={()=>router.back()}/>
    </>}
   </Panel>
  </ScrollView>;
