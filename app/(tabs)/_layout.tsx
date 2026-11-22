@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {Tabs,router} from 'expo-router';
-import {Pressable,Modal,View,Text,ScrollView,Animated,Easing,useWindowDimensions} from 'react-native';
+import {Pressable,Modal,View,Text,ScrollView,Animated,Easing,useWindowDimensions,Image} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../_layout';
@@ -25,7 +25,7 @@ export default function TabsLayout(){
    <Animated.View style={{position:'absolute',left:0,right:0,top:0,bottom:0,backgroundColor:'#000',opacity:backdrop.interpolate({inputRange:[0,1],outputRange:[0,.52]})}}/>
    <Animated.View style={{width:drawerWidth,height:'100%',backgroundColor:c.card,paddingTop:insets.top+12,paddingBottom:insets.bottom+12,paddingHorizontal:16,transform:[{translateX}],shadowColor:'#000',shadowOpacity:.2,shadowRadius:18,elevation:18}}>
     <View style={{flexDirection:'row',alignItems:'center',gap:12,paddingBottom:20,borderBottomWidth:1,borderBottomColor:c.border}}>
-     <View style={{width:48,height:48,borderRadius:16,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name="school" size={25} color={c.blue}/></View>
+     <View style={{width:48,height:48,borderRadius:16,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Image source={require('../../assets/icon.png')} resizeMode="contain" style={{width:48,height:48,borderRadius:14}}/></View>
      <View style={{flex:1}}><Text style={{fontSize:17,fontWeight:'800',color:c.text}}>SmartPrep Axom</Text><Text numberOfLines={1} style={{fontSize:12,color:c.muted}}>{userEmail||'Assam CEE · PCM'}</Text></View>
      <Pressable onPress={close} accessibilityLabel="Close navigation drawer"><Ionicons name="close" size={25} color={c.text}/></Pressable>
     </View>
