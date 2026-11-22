@@ -1,4 +1,4 @@
-name: Build Android V2 APK
+name: Build SmartPrep Axom V2.0 Release APK
 on:
   workflow_dispatch:
   push:
