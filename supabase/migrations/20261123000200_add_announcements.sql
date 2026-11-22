@@ -16,6 +16,7 @@ create table if not exists public.announcements (
 );
 alter table public.announcements enable row level security;
 grant select on public.announcements to anon, authenticated;
+grant insert, update, delete on public.announcements to authenticated;
 drop policy if exists announcements_read_published on public.announcements;
 create policy announcements_read_published on public.announcements
 for select to anon, authenticated
