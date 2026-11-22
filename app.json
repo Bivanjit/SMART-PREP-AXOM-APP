@@ -7,10 +7,15 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "android": {
-      "package": "com.smartprepaxom.app"
+      "package": "com.smartprepaxom.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#071B42"
+      }
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "icon": "./assets/icon.png"
   }
 }
