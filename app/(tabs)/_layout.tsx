@@ -2,14 +2,15 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Tabs,router} from 'expo-router';
 import {Pressable,Modal,View,Text,ScrollView,Dimensions,Animated,Easing} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../_layout';
 const W=Dimensions.get('window').width;
 type Icon=keyof typeof Ionicons.glyphMap;
 export default function TabsLayout(){
- const {c,userEmail,mode,setMode}=useTheme();const [open,setOpen]=useState(false);
- const translateX=useRef(new Animated.Value(-Math.min(W*.82,340))).current;
+ const {c,userEmail,mode,setMode}=useTheme();const insets=useSafeAreaInsets();const [open,setOpen]=useState(false);
+ const translateX=useRef(new Animated.Value(-Math.max(200,Math.min(W*.52,300)))).current;
  const backdrop=useRef(new Animated.Value(0)).current;
- const drawerWidth=Math.min(W*.82,340);
+ const drawerWidth=Math.max(200,Math.min(W*.52,300));
  useEffect(()=>{if(open){translateX.setValue(-drawerWidth);backdrop.setValue(0);Animated.parallel([Animated.spring(translateX,{toValue:0,useNativeDriver:true,damping:24,stiffness:210,mass:.85}),Animated.timing(backdrop,{toValue:1,duration:210,easing:Easing.out(Easing.quad),useNativeDriver:true})]).start();}},[open,drawerWidth,translateX,backdrop]);
  const close=()=>{Animated.parallel([Animated.timing(translateX,{toValue:-drawerWidth,duration:190,easing:Easing.in(Easing.cubic),useNativeDriver:true}),Animated.timing(backdrop,{toValue:0,duration:170,useNativeDriver:true})]).start(({finished})=>{if(finished)setOpen(false)})};
  const icons:Record<string,Icon>={index:'home-outline',batches:'people-outline',practice:'book-outline',tests:'clipboard-outline',profile:'person-circle-outline',lectures:'play-circle-outline',insights:'stats-chart-outline'};
@@ -22,7 +23,7 @@ export default function TabsLayout(){
  <Modal visible={open} transparent animationType="none" onRequestClose={close} statusBarTranslucent>
   <View style={{flex:1,flexDirection:'row'}}>
    <Animated.View style={{position:'absolute',left:0,right:0,top:0,bottom:0,backgroundColor:'#000',opacity:backdrop.interpolate({inputRange:[0,1],outputRange:[0,.52]})}}/>
-   <Animated.View style={{width:drawerWidth,height:'100%',backgroundColor:c.card,paddingTop:48,paddingHorizontal:20,transform:[{translateX}],shadowColor:'#000',shadowOpacity:.2,shadowRadius:18,elevation:18}}>
+   <Animated.View style={{width:drawerWidth,height:'100%',backgroundColor:c.card,paddingTop:insets.top+12,paddingBottom:insets.bottom+12,paddingHorizontal:16,transform:[{translateX}],shadowColor:'#000',shadowOpacity:.2,shadowRadius:18,elevation:18}}>
     <View style={{flexDirection:'row',alignItems:'center',gap:12,paddingBottom:20,borderBottomWidth:1,borderBottomColor:c.border}}>
      <View style={{width:48,height:48,borderRadius:16,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name="school" size={25} color={c.blue}/></View>
      <View style={{flex:1}}><Text style={{fontSize:17,fontWeight:'800',color:c.text}}>SmartPrep Axom</Text><Text numberOfLines={1} style={{fontSize:12,color:c.muted}}>{userEmail||'Assam CEE · PCM'}</Text></View>
