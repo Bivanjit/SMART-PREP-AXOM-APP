@@ -3,7 +3,7 @@ import {Tabs,router} from 'expo-router';
 import {Pressable,Modal,View,Text,ScrollView,Dimensions} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {useTheme} from '../_layout';
-const W=Dimensions.get('window').width;
+// Drawer width intentionally stays partial-width to match the requested reference.\nconst W=Dimensions.get('window').width;
 type Icon=keyof typeof Ionicons.glyphMap;
 export default function TabsLayout(){
  const {c,userEmail,mode,setMode}=useTheme();const [open,setOpen]=useState(false);
