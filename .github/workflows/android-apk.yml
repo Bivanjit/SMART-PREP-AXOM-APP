@@ -6,6 +6,7 @@ on:
     paths:
       - 'app/**'
       - 'components/**'
+      - 'assets/**'
       - 'lib/**'
       - 'package.json'
       - 'app.json'
