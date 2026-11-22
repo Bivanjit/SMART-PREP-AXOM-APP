@@ -2,6 +2,7 @@ import React,{useEffect,useState} from 'react';
 import {Alert,Image,ScrollView,TextInput,View,Text,ActivityIndicator,Pressable} from 'react-native';
 import {router} from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import {imageAssetToBytes} from '../lib/imageUpload';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../lib/supabase';
 import {useTheme} from './_layout';
@@ -10,7 +11,7 @@ export default function Payment(){
  const {c,userEmail}=useTheme();const [settings,setSettings]=useState<any>(null);const [loading,setLoading]=useState(true);const [product,setProduct]=useState<'chapter_practice'|'cee_complete'>('cee_complete');const [utr,setUtr]=useState('');const [txn,setTxn]=useState('');const [proof,setProof]=useState<ImagePicker.ImagePickerAsset|null>(null);const [busy,setBusy]=useState(false);
  useEffect(()=>{let live=true;void(async()=>{try{if(!supabase)return;const {data,error}=await supabase.from('payment_settings').select('*').eq('id',true).maybeSingle();if(error)throw error;if(live)setSettings(data||null)}catch(e){if(live)Alert.alert('Payment settings unavailable',e instanceof Error?e.message:'Please try again later.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[]);
  const field={borderWidth:1,borderColor:c.border,color:c.text,backgroundColor:c.bg,borderRadius:12,padding:14,fontSize:15};
- async function chooseProof(){const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.85});if(!result.canceled&&result.assets[0])setProof(result.assets[0]);}
+ async function chooseProof(){const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.85,base64:true});if(!result.canceled&&result.assets[0])setProof(result.assets[0]);}
  async function submit(){
   if(!supabase){Alert.alert('Unavailable','Payment service is not configured.');return;}
   const {data:{user}}=await supabase.auth.getUser();if(!user){Alert.alert('Sign in required','Sign in before submitting payment.');router.push('/auth');return;}
@@ -21,8 +22,8 @@ export default function Payment(){
   try{
    const ext=(proof.fileName?.split('.').pop()||proof.mimeType?.split('/').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
    const path=user.id+'/'+Date.now()+'-payment-proof.'+ext;
-   const response=await fetch(proof.uri);const blob=await response.blob();
-   const {error:uploadError}=await supabase.storage.from('payment-proofs').upload(path,blob,{contentType:mime,upsert:false});
+   const bytes=imageAssetToBytes(proof);
+   const {error:uploadError}=await supabase.storage.from('payment-proofs').upload(path,bytes,{contentType:mime,upsert:false});
    if(uploadError)throw uploadError;
    const amount=product==='cee_complete'?999:149;
    const {error}=await supabase.from('payment_submissions').insert({user_id:user.id,product_code:product,amount_inr:amount,payment_reference:txn.trim(),transaction_id:txn.trim(),utr_number:utr.trim(),proof_path:path,status:'pending'});
