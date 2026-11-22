@@ -119,7 +119,9 @@ Deno.serve(async (req: Request) => {
       throw answerError;
     }
 
-    return Response.json({ attempt_id: attempt.id, guest: false, score, max_score: maxScore, correct, wrong, skipped, answers: review }, { headers: cors });
+    const { data: xpRows } = await admin.from("question_xp_ledger").select("xp").eq("attempt_id", attempt.id);
+    const xpAwarded = (xpRows || []).reduce((sum: number, row: any) => sum + Number(row.xp || 0), 0);
+    return Response.json({ attempt_id: attempt.id, guest: false, score, max_score: maxScore, correct, wrong, skipped, xp_awarded: xpAwarded, answers: review }, { headers: cors });
   } catch (error) {
     console.error("submit-attempt", error);
     return Response.json({ error: error instanceof Error ? error.message : "Could not submit attempt." }, { status: 500, headers: cors });
