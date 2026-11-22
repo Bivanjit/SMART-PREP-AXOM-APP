@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from 'react';
-import {ScrollView,View,Text,Pressable,ActivityIndicator,Linking,Alert} from 'react-native';
+import {ScrollView,View,Text,Pressable,ActivityIndicator,Alert} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {router} from 'expo-router';
 import {supabase} from '../../lib/supabase';
