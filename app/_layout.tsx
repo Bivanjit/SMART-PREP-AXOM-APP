@@ -9,7 +9,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {supabase} from '../lib/supabase';
 void SplashScreen.preventAutoHideAsync().catch(()=>{});
 type Mode='light'|'dark';
-const colors={light:{bg:'#F8FAFC',card:'#FFFFFF',text:'#0F172A',muted:'#64748B',border:'#CBD5E1',blue:'#4F46E5',soft:'#EEF2FF',green:'#059669',red:'#DC2626',amber:'#F59E0B'},dark:{bg:'#0B1220',card:'#111827',text:'#F8FAFC',muted:'#94A3B8',border:'#334155',blue:'#818CF8',soft:'#1E293B',green:'#34D399',red:'#FDA4AF',amber:'#FBBF24'}};
+const colors={light:{bg:'#F8FAFC',card:'#FFFFFF',text:'#0F172A',muted:'#64748B',border:'#E2E8F0',blue:'#4F46E5',soft:'#EEF2FF',green:'#10B981',red:'#DC2626',amber:'#F59E0B'},dark:{bg:'#0B1220',card:'#111827',text:'#F8FAFC',muted:'#94A3B8',border:'#334155',blue:'#818CF8',soft:'#1E293B',green:'#34D399',red:'#FDA4AF',amber:'#FBBF24'}};
 type Attempt={id:string;title:string;score:number;max:number;correct:number;wrong:number;skipped:number;date:string};
 type Theme={mode:Mode;setMode:(m:Mode)=>void;c:typeof colors.light;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean};
 const Context=createContext<Theme|null>(null);
