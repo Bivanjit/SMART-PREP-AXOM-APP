@@ -3,6 +3,8 @@ import {Alert,KeyboardAvoidingView,Platform,ScrollView,Text,TextInput,View,Press
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {Heading,Copy,Panel,Button} from '../components/ui';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Image} from 'react-native';
 import {supabase} from '../lib/supabase';
 import {useTheme} from './_layout';
 
@@ -11,6 +13,7 @@ const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const friendly=(e:unknown)=>e instanceof Error?e.message:'Something went wrong. Please try again.';
 export default function AuthScreen(){
  const {c,userEmail}=useTheme();
+ const insets=useSafeAreaInsets();
  const [email,setEmail]=useState('');
  const [name,setName]=useState('');
  const [password,setPassword]=useState('');
@@ -22,7 +25,7 @@ export default function AuthScreen(){
  const [resendIn,setResendIn]=useState(0);
  const [pendingSignup,setPendingSignup]=useState(false);
  useEffect(()=>{if(resendIn<=0)return;const timer=setTimeout(()=>setResendIn(v=>Math.max(0,v-1)),1000);return()=>clearTimeout(timer)},[resendIn]);
- const field={borderWidth:1,borderColor:c.border,color:c.text,backgroundColor:c.bg,borderRadius:14,padding:15,fontSize:16};
+ const field={borderWidth:1,borderColor:c.border,color:c.text,backgroundColor:c.card,borderRadius:13,padding:14,fontSize:14,minHeight:50};
  const goHome=()=>router.replace('/(tabs)');
  async function syncProfile(user:{id:string;email?:string;user_metadata?:Record<string,unknown>}){
    if(!supabase)return;
@@ -123,10 +126,10 @@ export default function AuthScreen(){
  const otpMode=mode==='verify-signup'||mode==='otp-signin';
  const title=mode==='signup'?'Create account':mode==='verify-signup'?'Verify your email':mode==='otp-signin'?'Email sign in':mode==='reset'?'Reset password':'Sign in';
  return <KeyboardAvoidingView style={{flex:1,backgroundColor:c.bg}} behavior={Platform.OS==='ios'?'padding':undefined}>
-  <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:22,paddingTop:30,gap:16,flexGrow:1,justifyContent:'center'}}>
+  <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{paddingHorizontal:24,paddingTop:Math.max(24,insets.top+12),paddingBottom:Math.max(24,insets.bottom+20),gap:18,flexGrow:1,justifyContent:'center'}}>
    <View style={{alignItems:'center',gap:8,paddingVertical:12}}>
-    <View style={{width:72,height:72,borderRadius:23,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name="school" size={36} color={c.blue}/></View>
-    <Heading>SmartPrep Axom</Heading><Copy>Prepare Smarter. Perform Better.</Copy>
+    <Image source={require('../assets/icon.png')} resizeMode="contain" style={{width:78,height:78}}/>
+    <Text style={{fontSize:28,fontWeight:'900',letterSpacing:-.8,color:c.text}}>SmartPrep Axom</Text><Copy>Prepare Smarter. Perform Better.</Copy>
    </View>
    {userEmail?<Panel><Copy>YOU ARE SIGNED IN AS</Copy><Text style={{color:c.text,fontWeight:'800',fontSize:16}}>{userEmail}</Text><Button title="Continue to SmartPrep" onPress={goHome}/><Button title="Sign out" onPress={async()=>{await supabase?.auth.signOut()}}/></Panel>:<Panel>
     {mode==='signin'||mode==='signup'?<View style={{flexDirection:'row',gap:8}}><View style={{flex:1}}><Button title="Sign in" onPress={()=>setMode('signin')}/></View><View style={{flex:1}}><Button title="Create account" onPress={()=>setMode('signup')}/></View></View>:null}
