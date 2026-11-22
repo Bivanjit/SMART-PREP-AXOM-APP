@@ -27,7 +27,9 @@ export default function AuthScreen(){
  async function syncProfile(user:{id:string;email?:string;user_metadata?:Record<string,unknown>}){
    if(!supabase)return;
    const displayName=name.trim()||String(user.user_metadata?.display_name||'');
-   const {error}=await supabase.from('profiles').upsert({id:user.id,email:user.email||email.trim().toLowerCase(),display_name:displayName||null,preferred_language:'en',updated_at:new Date().toISOString()},{onConflict:'id'});
+   const profilePatch:any={id:user.id,email:user.email||email.trim().toLowerCase(),updated_at:new Date().toISOString()};
+   if(displayName)profilePatch.display_name=displayName;
+   const {error}=await supabase.from('profiles').upsert(profilePatch,{onConflict:'id'});
    if(error)throw error;
  }
  async function signup(){
