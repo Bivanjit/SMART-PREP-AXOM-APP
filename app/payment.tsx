@@ -16,13 +16,13 @@ export default function Payment(){
   const {data:{user}}=await supabase.auth.getUser();if(!user){Alert.alert('Sign in required','Sign in before submitting payment.');router.push('/auth');return;}
   if(!utr.trim()||!txn.trim()||!proof){Alert.alert('Missing details','Enter the UTR, transaction ID and select a screenshot/photo of your payment.');return;}
   if(!/^\d{8,24}$/.test(utr.trim())){Alert.alert('Check UTR','Enter the bank/UPI reference using 8–24 digits.');return;}
-  if(proof.fileSize&&proof.fileSize>8*1024*1024){Alert.alert('Image too large','Choose an image smaller than 8 MB.');return;}
+  if(proof.fileSize&&proof.fileSize>8*1024*1024){Alert.alert('Image too large','Choose an image smaller than 8 MB.');return;}const mime=proof.mimeType||'image/jpeg';if(!['image/jpeg','image/png','image/webp'].includes(mime)){Alert.alert('Unsupported image','Choose a JPG, PNG or WebP image.');return;}
   setBusy(true);
   try{
    const ext=(proof.fileName?.split('.').pop()||proof.mimeType?.split('/').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
    const path=user.id+'/'+Date.now()+'-payment-proof.'+ext;
    const response=await fetch(proof.uri);const blob=await response.blob();
-   const {error:uploadError}=await supabase.storage.from('payment-proofs').upload(path,blob,{contentType:proof.mimeType||'image/jpeg',upsert:false});
+   const {error:uploadError}=await supabase.storage.from('payment-proofs').upload(path,blob,{contentType:mime,upsert:false});
    if(uploadError)throw uploadError;
    const amount=product==='cee_complete'?999:149;
    const {error}=await supabase.from('payment_submissions').insert({user_id:user.id,product_code:product,amount_inr:amount,payment_reference:txn.trim(),transaction_id:txn.trim(),utr_number:utr.trim(),proof_path:path,status:'pending'});
