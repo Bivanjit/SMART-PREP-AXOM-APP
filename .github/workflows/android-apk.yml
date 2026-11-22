@@ -41,6 +41,11 @@ jobs:
         run: npx expo install --fix
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
+      - name: Inspect Expo Android autolinking metadata
+        run: |
+          sed -n '1,90p' android/settings.gradle
+          npx expo-modules-autolinking resolve --platform android > "$RUNNER_TEMP/autolinking.json"
+          node -e 'const x=require(process.env.RUNNER_TEMP+"/autolinking.json"); console.log(JSON.stringify(x.modules.map((m,i)=>({index:i,name:m.name,projects:m.projects})),null,2))'
       - name: Build installable debug APK
         working-directory: android
         run: |
