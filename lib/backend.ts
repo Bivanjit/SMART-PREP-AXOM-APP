@@ -28,8 +28,9 @@ export async function loadQuestionIds(questionIds:string[],language:'en'|'as'='e
  if(!supabase) throw new Error('Backend is not configured.');
  const ids=[...new Set(questionIds)].filter(Boolean);
  if(!ids.length) return [];
- const {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options').in('id',ids).eq('is_published',true).eq('language',language);
+ let {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options').in('id',ids).eq('is_published',true).eq('language',language);
  if(error) throw error;
+ if((data||[]).length===0&&language==='as'){const fallback=await supabase.from('questions').select('id,chapter_id,prompt,options').in('id',ids).eq('is_published',true).eq('language','en');if(fallback.error)throw fallback.error;data=fallback.data;}
  const byId=new Map((data||[]).map((q:any)=>[q.id,q]));
  return ids.map(id=>byId.get(id)).filter(Boolean) as RemoteQuestion[];
 }
