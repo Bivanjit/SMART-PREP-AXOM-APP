@@ -7,12 +7,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useColorScheme} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {supabase} from '../lib/supabase';
+import {designTokens,ThemeColors,AppMode} from '../lib/theme';
 void SplashScreen.preventAutoHideAsync().catch(()=>{});
-type Mode='light'|'dark';
+type Mode=AppMode;
 type Language='en'|'as';
-const colors={light:{bg:'#F6F8FA',card:'#FFFFFF',text:'#172033',muted:'#596579',border:'#E2E8F0',blue:'#1E3A8A',soft:'#EAF0FA',green:'#14532D',red:'#DC4545',amber:'#D97706',review:'#6D28D9',unvisited:'#94A3B8'},dark:{bg:'#11141A',card:'#1B222C',text:'#F1F5F9',muted:'#A3AFBF',border:'#2E3948',blue:'#8FA8FF',soft:'#242C38',green:'#4ADE80',red:'#F87171',amber:'#FBBF24',review:'#A78BFA',unvisited:'#64748B'}};
+const colors=designTokens
 type Attempt={id:string;title:string;score:number;max:number;correct:number;wrong:number;skipped:number;date:string};
-type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:Language)=>void;c:typeof colors.light;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean};
+type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:Language)=>void;c:ThemeColors;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean};
 const Context=createContext<Theme|null>(null);
 export function useTheme(){const v=useContext(Context);if(!v)throw Error('Missing app provider');return v}
 export default function Layout(){
@@ -26,7 +27,7 @@ export default function Layout(){
  useEffect(()=>{if(authLoading||onboardingChecked)return;void AsyncStorage.getItem('smartprep.onboarding.complete').then(done=>{if(!done&&pathname!=='/welcome')router.replace('/welcome');setOnboardingChecked(true)}).catch(()=>setOnboardingChecked(true))},[authLoading,onboardingChecked,pathname]);
  const toggleBookmark=(id:string)=>{const adding=!bookmarks.includes(id);const next=adding?[...bookmarks,id]:bookmarks.filter(x=>x!==id);setBookmarks(next);if(userId){void AsyncStorage.setItem('smartprep:'+userId+':bookmarks',JSON.stringify(next));if(supabase){const task=adding?supabase.from('user_bookmarks').insert({user_id:userId,question_id:id}):supabase.from('user_bookmarks').delete().eq('user_id',userId).eq('question_id',id);void task.then(({error})=>{if(error)console.warn('Bookmark sync failed:',error.message)})}}};
  const saveAttempt=(a:Attempt)=>setAttempts(old=>{const next=[a,...old].slice(0,100);if(userId)void AsyncStorage.setItem('smartprep:'+userId+':attempts',JSON.stringify(next));return next});
- const c=colors[mode];
+ const c=designTokens[mode];
  if(authLoading)return <SafeAreaProvider><View style={{flex:1,backgroundColor:c.bg,alignItems:'center',justifyContent:'center',gap:12}}><StatusBar style={mode==='dark'?'light':'dark'} translucent={false} backgroundColor={c.bg}/><Image source={require('../assets/icon.png')} style={{width:104,height:104,borderRadius:24}} resizeMode="contain"/><Text style={{fontSize:22,fontWeight:'900',color:c.text}}>SmartPrep Axom</Text><Text style={{fontSize:12,color:c.muted}}>Prepare Smarter. Perform Better.</Text><ActivityIndicator size="small" color={c.blue}/></View></SafeAreaProvider>;
  return <SafeAreaProvider><Context.Provider value={{mode,setMode,language,setLanguage,c,bookmarks,toggleBookmark,attempts,saveAttempt,userEmail,userId,authLoading}}><StatusBar style={mode==='dark'?'light':'dark'} translucent={false} backgroundColor={c.bg}/><Stack screenOptions={{headerStyle:{backgroundColor:c.bg},headerTintColor:c.text,contentStyle:{backgroundColor:c.bg},animation:'slide_from_right'}}><Stack.Screen name="welcome" options={{headerShown:false,gestureEnabled:false}}/><Stack.Screen name="(tabs)" options={{headerShown:false}}/><Stack.Screen name="settings" options={{title:'Settings',presentation:'card',animation:'slide_from_right'}}/><Stack.Screen name="practice/[subject]" options={{title:'Chapter practice'}}/><Stack.Screen name="lecture-player" options={{title:'Video lecture'}}/><Stack.Screen name="payment" options={{title:'Membership & payment'}}/><Stack.Screen name="auth" options={{title:'Your account'}}/><Stack.Screen name="quiz" options={{title:'Practice session'}}/><Stack.Screen name="results" options={{title:'Session review'}}/><Stack.Screen name="saved" options={{title:'Saved questions'}}/><Stack.Screen name="planner" options={{title:'Study planner'}}/><Stack.Screen name="leaderboard" options={{title:'Leaderboard'}}/><Stack.Screen name="notifications" options={{title:'Notifications'}}/><Stack.Screen name="about" options={{title:'About SmartPrep Axom'}}/><Stack.Screen name="reset-password" options={{title:'Set new password'}}/><Stack.Screen name="+not-found" options={{title:'Page not found'}}/></Stack></Context.Provider></SafeAreaProvider>;
 }
