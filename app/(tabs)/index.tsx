@@ -48,6 +48,7 @@ export default function Home(){
   }catch(e){console.warn('Home dashboard load failed:',e instanceof Error?e.message:e)}
   finally{if(live){setLoading(false);setRefreshing(false)}}
  })();return()=>{live=false}},[userId,userEmail,bookmarks.length,refreshKey]);
+ useEffect(()=>{if(!supabase)return;const channel=supabase.channel('smartprep-home-live-'+(userId||'guest')).on('postgres_changes',{event:'*',schema:'public',table:'app_content_settings'},()=>setRefreshKey(v=>v+1)).on('postgres_changes',{event:'*',schema:'public',table:'announcements'},()=>setRefreshKey(v=>v+1)).on('postgres_changes',{event:'*',schema:'public',table:'memberships',filter:userId?'user_id=eq.'+userId:undefined},()=>setRefreshKey(v=>v+1)).on('postgres_changes',{event:'*',schema:'public',table:'user_notifications',filter:userId?'user_id=eq.'+userId:undefined},()=>setRefreshKey(v=>v+1)).subscribe();return()=>{void supabase?.removeChannel(channel)}},[userId]);
  const coverage=useMemo(()=>data.publishedQuestions?Math.min(100,Math.round(data.attemptedQuestions/data.publishedQuestions*100)):0,[data]);
  const greeting=data.name.split(' ')[0]||'Student';
  const dismissPremium=()=>{setPremiumDismissed(true);void AsyncStorage.setItem('smartprep.premium.dismissed','true')};
