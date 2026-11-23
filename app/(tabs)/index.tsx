@@ -46,8 +46,8 @@ export default function Home(){
    const latest=(recentLecture as any)?.lectures;
    setData({name:profile?.display_name||userEmail?.split('@')[0]||'Student',avatar,premium:Boolean(member),attempts:attemptCount||0,publishedQuestions:questionCount||0,attemptedQuestions:attemptedCount||0,weeklyXp:Number(rank?.xp||0),unread:unread||0,saved:savedCount||bookmarks.length,latestLecture:latest?.id?{id:latest.id,title:latest.title,subject:latest.subject}:null});
   }catch(e){console.warn('Home dashboard load failed:',e instanceof Error?e.message:e)}
-  finally{if(live)setLoading(false)}
- })();return()=>{live=false}},[userId,userEmail,bookmarks.length]);
+  finally{if(live){setLoading(false);setRefreshing(false)}}
+ })();return()=>{live=false}},[userId,userEmail,bookmarks.length,refreshKey]);
  const coverage=useMemo(()=>data.publishedQuestions?Math.min(100,Math.round(data.attemptedQuestions/data.publishedQuestions*100)):0,[data]);
  const greeting=data.name.split(' ')[0]||'Student';
  const dismissPremium=()=>{setPremiumDismissed(true);void AsyncStorage.setItem('smartprep.premium.dismissed','true')};
