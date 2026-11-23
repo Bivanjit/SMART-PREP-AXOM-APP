@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useColorScheme} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {supabase} from '../lib/supabase';
+import {claimPaidDevice} from '../lib/device';
 void SplashScreen.preventAutoHideAsync().catch(()=>{});
 type Mode='light'|'dark';
 type Language='en'|'as';
@@ -22,6 +23,7 @@ export default function Layout(){
  void(async()=>{try{if(supabase){const {data:{session}}=await supabase.auth.getSession();await applySession(session);const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{void applySession(session).finally(()=>{if(alive)setAuthLoading(false)})});unsubscribe=()=>subscription.unsubscribe()}else{await applySession(null)}}catch{if(alive){setUserId(null);setUserEmail(null);setBookmarks([]);setAttempts([])}}finally{if(alive){setAuthLoading(false);void SplashScreen.hideAsync().catch(()=>{})}}})();
  return()=>{alive=false;unsubscribe?.()};
  },[]);
+ useEffect(()=>{if(!userId||!supabase)return;let alive=true;void(async()=>{const {data:membership,error}=await supabase.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).in('product_code',['chapter_practice','cee_complete']).limit(1).maybeSingle();if(error){console.warn('Paid membership check failed:',error.message);return;}if(membership){try{await claimPaidDevice()}catch(e){if(alive)console.warn('Paid device verification failed:',e instanceof Error?e.message:'Unknown error')}}})();return()=>{alive=false}},[userId]);
  const setMode=(m:Mode)=>{change(m);void AsyncStorage.setItem('smartprep.mode',m)};const setLanguage=(l:Language)=>{changeLanguage(l);void AsyncStorage.setItem('smartprep.language',l);if(userId&&supabase)void supabase.from('profiles').upsert({id:userId,email:userEmail,preferred_language:l,updated_at:new Date().toISOString()},{onConflict:'id'}).then(({error})=>{if(error)console.warn('Language preference sync failed:',error.message)})};
  useEffect(()=>{if(authLoading)return;const isPublic=pathname==='/auth'||pathname==='/reset-password';if(!userId&&!isPublic){router.replace('/auth');return;}if(userId&&(pathname==='/auth'||pathname==='/welcome'))router.replace('/(tabs)');},[authLoading,userId,pathname]);
  const toggleBookmark=(id:string)=>{const adding=!bookmarks.includes(id);const next=adding?[...bookmarks,id]:bookmarks.filter(x=>x!==id);setBookmarks(next);if(userId){void AsyncStorage.setItem('smartprep:'+userId+':bookmarks',JSON.stringify(next));if(supabase){const task=adding?supabase.from('user_bookmarks').insert({user_id:userId,question_id:id}):supabase.from('user_bookmarks').delete().eq('user_id',userId).eq('question_id',id);void task.then(({error})=>{if(error)console.warn('Bookmark sync failed:',error.message)})}}};
