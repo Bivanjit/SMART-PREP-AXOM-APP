@@ -1,45 +1,49 @@
-import React,{useEffect,useState} from 'react';
-import {ScrollView,ActivityIndicator,View,Text,Pressable} from 'react-native';
-import {Ionicons} from '@expo/vector-icons';
+import React,{useEffect,useMemo,useState} from 'react';
+import {ScrollView,View,Text,Pressable,ActivityIndicator,ImageBackground} from 'react-native';
 import {router} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
-import {Heading,Copy,Panel,Button} from '../../components/ui';
+import {Heading,Copy,Panel,Button,SegmentedTabs,ProgressBar,EmptyState} from '../../components/ui';
 
+type Batch={id:string;slug:string;title:string;subtitle:string|null;description:string|null;access_tier:'free'|'premium';cover_image_path:string|null;subject_label:string|null;syllabus_summary:string|null;items:any[];enrolled:boolean;progress:number;};
+type Filter='all'|'free'|'premium';
 export default function Batches(){
- const {c,userId}=useTheme();
- const [loading,setLoading]=useState(true),[membership,setMembership]=useState<string|null>(null),[expiry,setExpiry]=useState<string|null>(null);
- useEffect(()=>{let live=true;void(async()=>{
-  if(!supabase||!userId){setLoading(false);return}
-  const {data,error}=await supabase.from('memberships').select('product_code,expires_at').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).order('expires_at',{ascending:false}).limit(1).maybeSingle();
-  if(!live)return;if(error)console.warn(error.message);setMembership(data?.product_code||null);setExpiry(data?.expires_at||null);setLoading(false);
- })();return()=>{live=false}},[userId]);
- return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{padding:18,paddingTop:16,gap:16,paddingBottom:40}}>
-  <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>YOUR CLASSROOM</Text><Heading>My batches</Heading><Copy>Learning paths, available study material and your active membership.</Copy></View>
-  <Panel style={{gap:12}}>
-   <View style={{flexDirection:'row',alignItems:'center',gap:11}}>
-    <View style={{width:45,height:45,borderRadius:14,backgroundColor:'#DCFCE7',alignItems:'center',justifyContent:'center'}}><Ionicons name="book-outline" size={22} color="#166534"/></View>
-    <View style={{flex:1,gap:3}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Assam CEE Foundation</Text><Text style={{fontSize:10,fontWeight:'900',color:c.green}}>FREE LEARNING ACCESS</Text></View>
-    <View style={{paddingHorizontal:9,paddingVertical:5,borderRadius:20,backgroundColor:'#DCFCE7'}}><Text style={{fontSize:9,fontWeight:'900',color:'#166534'}}>FREE</Text></View>
+ const {c,userId}=useTheme();const [rows,setRows]=useState<Batch[]>([]),[filter,setFilter]=useState<Filter>('all');
+ const [loading,setLoading]=useState(true),[error,setError]=useState(''),[enrolling,setEnrolling]=useState<string|null>(null);
+ useEffect(()=>{let live=true;void(async()=>{if(!supabase){setLoading(false);return;}try{
+  const [{data:batches,error:bError},{data:enrollments},{data:progress}]=await Promise.all([
+   supabase.from('batches').select('id,slug,title,subtitle,description,access_tier,cover_image_path,subject_label,syllabus_summary,display_order,batch_items(id,title,item_type,is_published,display_order)').eq('status','published').order('display_order'),
+   userId?supabase.from('batch_enrollments').select('batch_id,status').eq('user_id',userId).eq('status','enrolled'):Promise.resolve({data:[]}),
+   userId?supabase.from('batch_item_progress').select('batch_item_id,progress_percent,batch_items!inner(batch_id)').eq('user_id',userId):Promise.resolve({data:[]})
+  ]);
+  if(bError)throw bError;
+  const enrolled=new Set((enrollments||[]).map((x:any)=>x.batch_id));
+  const progressRows=progress||[];
+  const mapped=(batches||[]).map((b:any)=>{const items=(b.batch_items||[]).filter((x:any)=>x.is_published);const p=progressRows.filter((x:any)=>items.some((i:any)=>i.id===x.batch_item_id));const pct=p.length?Math.round(p.reduce((sum:number,x:any)=>sum+Number(x.progress_percent||0),0)/Math.max(1,items.length)):0;return {...b,items,enrolled:enrolled.has(b.id),progress:pct} as Batch});
+  if(live)setRows(mapped);
+ }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load batches.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[userId]);
+ const visible=useMemo(()=>rows.filter(b=>filter==='all'||b.access_tier===filter),[rows,filter]);
+ async function enroll(batch:Batch){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'){const {data:member}=await supabase!.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!member){router.push('/payment');return;}}
+  setEnrolling(batch.id);const {error}=await supabase!.from('batch_enrollments').insert({batch_id:batch.id,user_id:userId});setEnrolling(null);if(error&&error.code!=='23505'){setError(error.message);return;}setRows(old=>old.map(x=>x.id===batch.id?{...x,enrolled:true}:x));router.push({pathname:'/batch/[id]',params:{id:batch.id}});
+ }
+ const filters=[{label:'All Batches',value:'all' as const},{label:'Free',value:'free' as const},{label:'Premium',value:'premium' as const}];
+ return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{padding:17,paddingTop:14,gap:16,paddingBottom:44}}>
+  <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>YOUR CLASSROOM</Text><Heading>My Batches</Heading><Copy>Your learning programs, classes and preparation tracks.</Copy></View>
+  <SegmentedTabs options={filters} value={filter} onChange={setFilter}/>
+  {loading?<ActivityIndicator color={c.green} size="large"/>:error?<EmptyState icon="cloud-offline-outline" title="Batches unavailable" description={error}/>:null}
+  {visible.length?visible.map(batch=>{const image=batch.cover_image_path?supabase?.storage.from('learning-assets').getPublicUrl(batch.cover_image_path).data.publicUrl:null;return <Panel key={batch.id} style={{padding:0,overflow:'hidden',gap:0}}>
+   <ImageBackground source={image?{uri:image}:undefined} style={{height:116,backgroundColor:batch.access_tier==='free'?'#245A3C':'#32465A'}} imageStyle={{resizeMode:'cover'}}>
+    <View style={{flex:1,backgroundColor:'rgba(9,25,28,.28)',padding:13,alignItems:'flex-end',justifyContent:'flex-start'}}><View style={{backgroundColor:batch.access_tier==='free'?c.green:c.amber,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:9,fontWeight:'900',color:'#FFFFFF'}}>{batch.access_tier.toUpperCase()}</Text></View></View>
+   </ImageBackground>
+   <View style={{padding:15,gap:9}}>
+    <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{batch.title}</Text>
+    {batch.subtitle?<Text style={{fontSize:11,fontWeight:'800',color:c.green}}>{batch.subtitle}</Text>:null}
+    <Copy>{batch.description||batch.syllabus_summary||'Course content and learning resources will appear here after the batch is configured.'}</Copy>
+    <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Text style={{fontSize:10,color:c.textSecondary}}>{batch.items.length} published learning items</Text><Text style={{fontSize:10,fontWeight:'900',color:c.green}}>{batch.progress}%</Text></View>
+    <ProgressBar value={batch.progress}/>
+    <Button title={batch.enrolled?'Resume Learning':batch.access_tier==='premium'?'Enroll with Premium':'Enroll in Free Batch'} icon={batch.enrolled?'play':'arrow-forward'} loading={enrolling===batch.id} disabled={enrolling===batch.id} onPress={()=>batch.enrolled?router.push({pathname:'/batch/[id]',params:{id:batch.id}}):void enroll(batch)}/>
    </View>
-   <Copy>Start with the free chapter syllabus, available practice sets and published video lessons. Your progress is saved when you sign in.</Copy>
-   <View style={{flexDirection:'row',gap:8}}>
-    <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{flex:1,backgroundColor:c.soft,borderRadius:11,padding:12,alignItems:'center'}}><Text style={{fontSize:12,fontWeight:'800',color:c.blue}}>Explore practice</Text></Pressable>
-    <Pressable onPress={()=>router.push('/(tabs)/lectures')} style={{flex:1,backgroundColor:c.soft,borderRadius:11,padding:12,alignItems:'center'}}><Text style={{fontSize:12,fontWeight:'800',color:c.blue}}>View lectures</Text></Pressable>
-   </View>
-  </Panel>
-  <Panel style={{gap:12}}>
-   <View style={{flexDirection:'row',alignItems:'center',gap:11}}>
-    <View style={{width:45,height:45,borderRadius:14,backgroundColor:'#FEF3C7',alignItems:'center',justifyContent:'center'}}><Ionicons name="ribbon-outline" size={22} color="#92400E"/></View>
-    <View style={{flex:1,gap:3}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>CEE Complete</Text><Text style={{fontSize:10,fontWeight:'900',color:c.amber}}>PREMIUM PROGRAMME</Text></View>
-    <View style={{paddingHorizontal:9,paddingVertical:5,borderRadius:20,backgroundColor:'#FEF3C7'}}><Text style={{fontSize:9,fontWeight:'900',color:'#92400E'}}>PREMIUM</Text></View>
-   </View>
-   {loading?<ActivityIndicator color={c.blue}/>:membership?<><Text style={{fontSize:13,fontWeight:'900',color:c.green}}>Active membership</Text><Copy>{membership.replace(/_/g,' ')}{expiry?' · Valid until '+new Date(expiry).toLocaleDateString():''}</Copy></>:<Copy>Unlock eligible premium lectures, mock tests and complete preparation resources with a verified membership.</Copy>}
-   <Button title={membership?'Manage membership':'Explore membership plans'} onPress={()=>router.push('/payment')} icon="arrow-forward"/>
-  </Panel>
-  <Panel style={{gap:8}}>
-   <View style={{flexDirection:'row',alignItems:'center',gap:9}}><Ionicons name="school-outline" size={20} color={c.blue}/><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>My enrolments</Text></View>
-   {loading?<ActivityIndicator color={c.blue}/>:membership?<Copy>Your active membership is recognised. Purchased batch schedules and classes will appear here when assigned to your account.</Copy>:<Copy>You have access to the free learning path. Purchased programmes will appear here after membership verification.</Copy>}
-  </Panel>
+  </Panel>}) : !loading&&!error?<EmptyState icon="school-outline" title="No published batches yet" description="Your batch catalogue is ready. The Foundation Batch, Crash Course and Chapter Wise Concept Series will appear here after they are configured and published in the admin console."/>:null}
  </ScrollView>;
 }
