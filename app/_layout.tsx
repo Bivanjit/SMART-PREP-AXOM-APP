@@ -10,7 +10,7 @@ import {supabase} from '../lib/supabase';
 void SplashScreen.preventAutoHideAsync().catch(()=>{});
 type Mode='light'|'dark';
 type Language='en'|'as';
-const colors={light:{bg:'#F8FAFC',card:'#FFFFFF',text:'#0F172A',muted:'#64748B',border:'#E2E8F0',blue:'#4F46E5',soft:'#EEF2FF',green:'#10B981',red:'#DC2626',amber:'#F59E0B'},dark:{bg:'#0B1220',card:'#111827',text:'#F8FAFC',muted:'#94A3B8',border:'#334155',blue:'#818CF8',soft:'#1E293B',green:'#34D399',red:'#FDA4AF',amber:'#FBBF24'}};
+const colors={light:{bg:'#F6F8FA',card:'#FFFFFF',text:'#172033',muted:'#596579',border:'#E2E8F0',blue:'#1E3A8A',soft:'#EAF0FA',green:'#14532D',red:'#DC4545',amber:'#D97706',review:'#6D28D9',unvisited:'#94A3B8'},dark:{bg:'#11141A',card:'#1B222C',text:'#F1F5F9',muted:'#A3AFBF',border:'#2E3948',blue:'#8FA8FF',soft:'#242C38',green:'#4ADE80',red:'#F87171',amber:'#FBBF24',review:'#A78BFA',unvisited:'#64748B'}};
 type Attempt={id:string;title:string;score:number;max:number;correct:number;wrong:number;skipped:number;date:string};
 type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:Language)=>void;c:typeof colors.light;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean};
 const Context=createContext<Theme|null>(null);
