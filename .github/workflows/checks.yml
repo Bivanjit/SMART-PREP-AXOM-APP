@@ -1,4 +1,7 @@
 name: Android app checks
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 on:
   push:
     branches: [main, v3-complete-redesign]
