@@ -19,8 +19,8 @@ export async function submitServerAttempt(args:{testId?:string;pyqPaperId?:strin
  const {data:{session}}=await supabase.auth.getSession();
  if(!session&&args.testId) throw new Error('Sign in before submitting a full mock test. Free chapter practice is available to guests.');
  const {data,error}=await supabase.functions.invoke('submit-attempt',{body:{test_id:args.testId,pyq_paper_id:args.pyqPaperId,custom_test:args.customTest===true,question_ids:args.questionIds,title:args.title,answers:args.answers}});
- if(error) throw error;
- if(data?.error) throw new Error(data.error);
+ if(error){let detail=error.message;const context=(error as any).context;if(context&&typeof context.clone==='function'){const payload=await context.clone().json().catch(()=>null);if(payload?.error)detail=String(payload.error);else if(payload?.message)detail=String(payload.message);}throw new Error(detail);}
+ if(data?.error) throw new Error(String(data.error));
  return data;
 }
 
