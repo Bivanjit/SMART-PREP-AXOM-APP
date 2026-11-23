@@ -3,7 +3,7 @@
     "name": "SmartPrep Axom",
     "slug": "smartprep-axom",
     "scheme": "smartprepaxom",
-    "version": "3.5.3",
+    "version": "3.5.4",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -17,7 +17,11 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#06163B"
       },
-      "versionCode": 35300
+      "versionCode": 35400,
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -30,9 +34,16 @@
           "backgroundColor": "#06163B"
         }
       ],
-      "expo-notifications"
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2563EB",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "icon": "./assets/icon.png",
-    "description": "SmartPrep Axom Assam CEE preparation app — version 3.5.3"
+    "description": "SmartPrep Axom Assam CEE preparation app — version 3.5.4"
   }
 }
