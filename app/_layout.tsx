@@ -4,7 +4,6 @@ import {ActivityIndicator,View,Text,Image} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useColorScheme} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {supabase} from '../lib/supabase';
 import {designTokens,ThemeColors,AppMode} from '../lib/theme';
