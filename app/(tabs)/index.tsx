@@ -66,7 +66,8 @@ export default function Home(){
   </Modal>
   <ScrollView style={{backgroundColor:c.bg}} contentContainerStyle={{paddingHorizontal:18,paddingTop:14,paddingBottom:38,gap:18}}>
    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-    <View style={{flexDirection:'row',alignItems:'center',gap:10,flex:1}}>
+    <View style={{flexDirection:'row',alignItems:'center',gap:8,flex:1}}>
+     <Pressable onPress={()=>router.push('/leaderboard')} accessibilityLabel="Open leaderboard" style={{width:38,height:38,borderRadius:12,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy-outline" size={19} color={c.amber}/></Pressable>
      <Image source={require('../../assets/icon.png')} style={{width:42,height:42,borderRadius:12}}/>
      <View style={{flex:1,gap:2}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1,color:c.blue}}>SMARTPREP AXOM</Text><Text numberOfLines={1} style={{fontSize:18,fontWeight:'900',color:c.text}}>{tr(language,'Hi')}, {greeting} 👋</Text></View>
     </View>
