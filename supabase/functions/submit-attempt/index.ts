@@ -30,6 +30,7 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json();
     const testId = typeof body.test_id === "string" ? body.test_id : null;
+    const pyqPaperId = typeof body.pyq_paper_id === "string" ? body.pyq_paper_id : null;
     const questionIds = Array.isArray(body.question_ids) ? body.question_ids.filter((x: unknown) => typeof x === "string") : [];
     const submitted = Array.isArray(body.answers) ? body.answers : [];
     if (submitted.length === 0 || submitted.length > 150) {
@@ -38,7 +39,7 @@ Deno.serve(async (req: Request) => {
 
     if (!user && testId) return Response.json({ error: "Sign in to submit a full mock test." }, { status: 401, headers: cors });
     let title = typeof body.title === "string" ? body.title.slice(0, 120) : "Chapter Practice";
-    let source: "mock_test" | "chapter_practice" = testId ? "mock_test" : "chapter_practice";
+    let source: "mock_test" | "chapter_practice" | "previous_year" | "custom_test" = testId ? "mock_test" : pyqPaperId ? "previous_year" : body.custom_test === true ? "custom_test" : "chapter_practice";
     let maxScore = 0;
     let rules = new Map<string, { answer_key: string; explanation: string | null; marks: number; negative: number }>();
 
