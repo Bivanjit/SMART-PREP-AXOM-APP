@@ -4,7 +4,7 @@ import {router,useLocalSearchParams} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
-import {Heading,Copy,Panel,Button,EmptyState,ProgressBar,SubjectBadge} from '../../components/ui';
+import {Heading,Copy,Panel,Button,EmptyState,SubjectBadge} from '../../components/ui';
 type Chapter={id:string;name:string;slug:string;display_order:number;questionCount:number;topicCount:number};
 type SubjectName='Physics'|'Chemistry'|'Mathematics';
 const validSubjects:SubjectName[]=['Physics','Chemistry','Mathematics'];
@@ -35,7 +35,6 @@ export default function Chapters(){
   <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>Chapter catalogue</Text><Text style={{fontSize:11,color:c.textMuted}}>{filtered.length} shown</Text></View>
   {loading?<ActivityIndicator color={c.green}/>:error?<EmptyState icon="cloud-offline-outline" title="Chapters unavailable" description={error}/>:filtered.length?filtered.map((ch,i)=><Pressable key={ch.id} disabled={!ch.questionCount} onPress={()=>router.push({pathname:'/quiz',params:{subject:name,chapter:ch.name,chapterId:ch.id}})} style={({pressed})=>({backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:15,padding:14,gap:10,opacity:!ch.questionCount?.55:pressed?.75:1})}>
    <View style={{flexDirection:'row',alignItems:'center',gap:11}}><View style={{width:36,height:36,borderRadius:11,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Text style={{fontWeight:'900',fontSize:12,color:c.primary}}>{i+1}</Text></View><View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{ch.name}</Text><Text style={{fontSize:10,color:ch.questionCount?c.green:c.textMuted}}>{ch.questionCount?ch.questionCount+' published questions': 'Questions coming soon'} · {ch.topicCount} topics</Text></View><Ionicons name={ch.questionCount?'chevron-forward':'lock-closed-outline'} size={17} color={c.textMuted}/></View>
-   {ch.questionCount?<ProgressBar value={Math.min(100,ch.questionCount/Math.max(1,totalQuestions)*100)} height={4}/>:null}
   </Pressable>):!loading?<EmptyState icon="book-outline" title="No chapters found" description="Active chapters will appear here when configured in the admin console."/>:null}
   <Panel style={{gap:8}}><Heading style={{fontSize:15}}>Your subject workspace</Heading><Copy>All active chapters are listed here. Chapters without published questions remain visible but cannot be started yet. Premium questions are protected by membership checks.</Copy><Button title="Back to practice" variant="secondary" onPress={()=>router.back()}/></Panel>
  </ScrollView>;
