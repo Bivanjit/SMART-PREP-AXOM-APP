@@ -91,7 +91,7 @@ export default function Home(){
    <View style={{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between',rowGap:10}}>
     <Shortcut icon="book-outline" label="Practice" detail="Chapters and mixed MCQs" onPress={()=>router.push('/(tabs)/practice')}/>
     <Shortcut icon="clipboard-outline" label="Mock tests" detail="Full CEE test papers" onPress={()=>router.push('/(tabs)/tests')}/>
-    <Shortcut icon="time-outline" label="Previous papers" detail="Explore past questions" onPress={()=>router.push('/(tabs)/practice')}/>
+    <Shortcut icon="time-outline" label="Study planner" detail="Plan your study week" onPress={()=>router.push('/planner')}/>
     <Shortcut icon="play-circle-outline" label="Video lectures" detail="Learn from lessons" onPress={()=>router.push('/(tabs)/lectures')}/>
     <Shortcut icon="bookmark-outline" label="Saved questions" detail="Your revision list" onPress={()=>router.push('/saved')}/>
     <Shortcut icon="stats-chart-outline" label="Learning insights" detail="Review your performance" onPress={()=>router.push('/(tabs)/insights')}/>
