@@ -36,7 +36,6 @@
         }
       ],
       "expo-notifications",
-      "expo-screen-capture",
       "expo-secure-store"
     ],
     "icon": "./assets/icon.png"
