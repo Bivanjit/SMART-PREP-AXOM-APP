@@ -20,7 +20,8 @@ function SectionTitle({title,action,onPress}:{title:string;action?:string;onPres
 export default function Home(){
  const {c,userEmail,userId,bookmarks,language}=useTheme();const {width:windowWidth}=useWindowDimensions();
  const [data,setData]=useState<HomeData>({name:'Student',avatar:null,premium:false,attempts:0,publishedQuestions:0,attemptedQuestions:0,weeklyXp:0,unread:0,saved:bookmarks.length,latestLecture:null});
- const [loading,setLoading]=useState(true),[premiumDismissed,setPremiumDismissed]=useState(false);const [hero,setHero]=useState({title:'Assam CEE',year:'2027',description:'Complete preparation for Physics, Chemistry & Mathematics.',image:assamHero});
+ const [loading,setLoading]=useState(true),[premiumDismissed,setPremiumDismissed]=useState(false);const [downloadCount,setDownloadCount]=useState<number|null>(null);const [hero,setHero]=useState({title:'Assam CEE',year:'2027',description:'Complete preparation for Physics, Chemistry & Mathematics.',image:assamHero});
+ useEffect(()=>{let live=true;fetch("https://smart-axom-prep.vercel.app/api/download-stats").then(r=>r.ok?r.json():null).then(d=>{if(live&&typeof d?.downloads==="number")setDownloadCount(d.downloads)}).catch(()=>{});return()=>{live=false}},[]);
  useEffect(()=>{let live=true;void AsyncStorage.getItem('smartprep.premium.dismissed').then(v=>{if(live)setPremiumDismissed(v==='true')}).catch(()=>{});return()=>{live=false}},[]);
  useEffect(()=>{let live=true;void(async()=>{
   if(!supabase){setLoading(false);return;}
@@ -92,6 +93,11 @@ export default function Home(){
    <View style={{width:42,height:42,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy-outline" size={22} color={c.amber}/></View>
    <View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Leaderboard & Leagues</Text><Text style={{fontSize:11,color:c.textSecondary}}>Your weekly score · {data.weeklyXp} XP</Text></View><Ionicons name="chevron-forward" size={18} color={c.textMuted}/>
   </Pressable>
+  <View style={{flexDirection:'row',gap:10}}>
+   <Pressable onPress={()=>router.push('/reviews')} style={{flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7}}><Ionicons name="star-outline" size={21} color={c.amber}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Rate SmartPrep</Text><Text style={{fontSize:10,color:c.textSecondary}}>Share your review</Text></Pressable>
+   <Pressable onPress={()=>router.push('/community')} style={{flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7}}><Ionicons name="chatbubbles-outline" size={21} color={c.green}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Community</Text><Text style={{fontSize:10,color:c.textSecondary}}>Coming soon</Text></Pressable>
+  </View>
+  {downloadCount!==null?<Text style={{fontSize:10,color:c.textMuted,textAlign:'center'}}>{downloadCount.toLocaleString()} APK downloads · GitHub release downloads, not unique installs</Text>:null}
   {loading?<ActivityIndicator color={c.green}/>:null}
   <View style={{flexDirection:'row',justifyContent:'space-between',gap:12}}><View style={{flex:1,gap:3}}><Text style={{fontSize:10,color:c.textMuted,fontWeight:'800'}}>TESTS ATTEMPTED</Text><Text style={{fontSize:19,color:c.text,fontWeight:'900'}}>{data.attempts}</Text></View><View style={{flex:1,gap:3}}><Text style={{fontSize:10,color:c.textMuted,fontWeight:'800'}}>WEEKLY XP</Text><Text style={{fontSize:19,color:c.text,fontWeight:'900'}}>{data.weeklyXp}</Text></View></View>
  </ScrollView>;
