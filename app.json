@@ -9,13 +9,13 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F6F8FA"
+      "backgroundColor": "#06163B"
     },
     "android": {
       "package": "com.smartprepaxom.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#1E3A8A"
+        "backgroundColor": "#06163B"
       }
     },
     "plugins": [
@@ -24,7 +24,7 @@
         "image": "./assets/icon.png",
         "imageWidth": 150,
         "resizeMode": "contain",
-        "backgroundColor": "#F6F8FA"
+        "backgroundColor": "#06163B"
       }],
       "expo-notifications"
     ],
