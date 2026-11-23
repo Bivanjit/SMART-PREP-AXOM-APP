@@ -3,7 +3,7 @@
     "name": "SmartPrep Axom",
     "slug": "smartprep-axom",
     "scheme": "smartprepaxom",
-    "version": "3.5.2",
+    "version": "3.5.3",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -17,7 +17,7 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#06163B"
       },
-      "versionCode": 35200
+      "versionCode": 35300
     },
     "plugins": [
       "expo-router",
@@ -33,6 +33,6 @@
       "expo-notifications"
     ],
     "icon": "./assets/icon.png",
-    "description": "SmartPrep Axom Assam CEE preparation app — version 3.5.2"
+    "description": "SmartPrep Axom Assam CEE preparation app — version 3.5.3"
   }
 }
