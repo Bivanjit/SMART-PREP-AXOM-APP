@@ -6,6 +6,7 @@ import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
 import {Copy,Heading,Panel,Button,ProgressRing,ProgressBar} from '../../components/ui';
+import BrandLogo from '../../components/BrandLogo';
 
 const assamHero='https://commons.wikimedia.org/wiki/Special:FilePath/A_Tea_Garden_of_Assam.jpg?width=1400';
 type HomeData={name:string;avatar:string|null;premium:boolean;attempts:number;publishedQuestions:number;attemptedQuestions:number;weeklyXp:number;unread:number;saved:number;latestLecture:{id:string;title:string;subject:string}|null;};
@@ -53,7 +54,7 @@ export default function Home(){
  return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{paddingHorizontal:16,paddingTop:8,paddingBottom:38,gap:17}}>
   <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
    <Pressable onPress={()=>router.push('/(tabs)/profile')} accessibilityLabel="Open profile" style={{width:42,height:42,borderRadius:21,overflow:'hidden',borderWidth:1,borderColor:c.border,backgroundColor:c.card,alignItems:'center',justifyContent:'center'}}>{data.avatar?<Image source={{uri:data.avatar}} style={{width:42,height:42,borderRadius:21}}/>:<Ionicons name="person-circle-outline" size={36} color={c.primary}/>}</Pressable>
-   <View style={{width:40,height:40,borderRadius:11,backgroundColor:'#06163B',alignItems:'center',justifyContent:'center',overflow:'hidden'}}><Image source={require('../../assets/icon.png')} style={{width:38,height:38}} resizeMode="contain"/></View>
+   <BrandLogo size={40}/>
    <View style={{flex:1,gap:1}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>SmartPrep Axom</Text><Text style={{fontSize:9,color:c.textMuted}}>Prepare Smarter. Perform Better.</Text></View>
    <Pressable onPress={()=>router.push('/leaderboard')} accessibilityLabel="Leaderboard" style={{width:38,height:38,borderRadius:12,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy-outline" size={19} color={c.amber}/></Pressable>
    <Pressable onPress={()=>router.push('/notifications')} accessibilityLabel="Notifications" style={{width:38,height:38,borderRadius:12,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="notifications-outline" size={19} color={c.text}/>{data.unread>0?<View style={{position:'absolute',right:7,top:7,width:7,height:7,borderRadius:4,backgroundColor:c.error}}/>:null}</Pressable>
