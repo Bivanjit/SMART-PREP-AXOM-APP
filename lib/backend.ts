@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { getStableDeviceId, getDevicePlatform } from './device';
 
 export type RemoteQuestion = {id:string;chapter_id:string;prompt:string;options:string[];chapter?:string};
 export async function loadChapterQuestions(chapterId:string,language:'en'|'as'='en'){
@@ -18,7 +19,8 @@ export async function submitServerAttempt(args:{testId?:string;questionIds:strin
  if(!supabase) throw new Error('Backend is not configured.');
  const {data:{session}}=await supabase.auth.getSession();
  if(!session) throw new Error('Sign in before submitting a practice session.');
- const {data,error}=await supabase.functions.invoke('submit-attempt',{body:{test_id:args.testId,question_ids:args.questionIds,title:args.title,answers:args.answers}});
+ const device_id=await getStableDeviceId();
+ const {data,error}=await supabase.functions.invoke('submit-attempt',{body:{test_id:args.testId,question_ids:args.questionIds,title:args.title,answers:args.answers,device_id,platform:getDevicePlatform()}});
  if(error) throw error;
  if(data?.error) throw new Error(data.error);
  return data;
