@@ -3,7 +3,7 @@
     "name": "SmartPrep Axom",
     "slug": "smartprep-axom",
     "scheme": "smartprepaxom",
-    "version": "3.5.1",
+    "version": "3.5.2",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -17,7 +17,7 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#06163B"
       },
-      "versionCode": 35100
+      "versionCode": 35200
     },
     "plugins": [
       "expo-router",
