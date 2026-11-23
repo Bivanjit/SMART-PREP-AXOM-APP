@@ -3,6 +3,7 @@ import {Stack,router,usePathname} from 'expo-router';
 import {ActivityIndicator,View,Text,Image} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import {usePreventScreenCapture} from 'expo-screen-capture';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {supabase} from '../lib/supabase';
@@ -16,6 +17,7 @@ type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:La
 const Context=createContext<Theme|null>(null);
 export function useTheme(){const v=useContext(Context);if(!v)throw Error('Missing app provider');return v}
 export default function Layout(){
+ usePreventScreenCapture('smartprep-sensitive-screens');
  const pathname=usePathname();const [onboardingChecked,setOnboardingChecked]=useState(false);const [mode,change]=useState<Mode>('light');const [language,changeLanguage]=useState<Language>('en');const [bookmarks,setBookmarks]=useState<string[]>([]);const [attempts,setAttempts]=useState<Attempt[]>([]);const [userEmail,setUserEmail]=useState<string|null>(null);const [userId,setUserId]=useState<string|null>(null);const [authLoading,setAuthLoading]=useState(true);
  useEffect(()=>{void AsyncStorage.multiGet(['smartprep.mode','smartprep.language']).then(v=>{if(v[0][1]==='dark'||v[0][1]==='light')change(v[0][1] as Mode);if(v[1][1]==='as'||v[1][1]==='en')changeLanguage(v[1][1] as Language)}).catch(()=>{});let alive=true;let unsubscribe:(()=>void)|undefined;
  const applySession=async(session:any)=>{const uid=session?.user?.id||null;if(!alive)return;setUserId(uid);setUserEmail(session?.user?.email??null);if(!uid){setBookmarks([]);setAttempts([]);return;}try{const [b,a]=await AsyncStorage.multiGet(['smartprep:'+uid+':bookmarks','smartprep:'+uid+':attempts']);if(!alive)return;setBookmarks(b[1]?JSON.parse(b[1]):[]);setAttempts(a[1]?JSON.parse(a[1]):[]);if(supabase){const {data,error}=await supabase.from('user_bookmarks').select('question_id').eq('user_id',uid);if(!error&&alive){const remote=(data||[]).map((x:any)=>x.question_id);setBookmarks(remote);void AsyncStorage.setItem('smartprep:'+uid+':bookmarks',JSON.stringify(remote));}}}catch{if(alive){setBookmarks([]);setAttempts([])}}};
