@@ -17,11 +17,11 @@ export function Panel({children,style}:{children:React.ReactNode;style?:ViewStyl
  return <View style={[{backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:17,padding:15,gap:10},style]}>{children}</View>;
 }
 export function Button({title,onPress,variant='primary',icon}:{title:string;onPress:()=>void;variant?:'primary'|'secondary'|'quiet';icon?:keyof typeof Ionicons.glyphMap}){
- const {c}=useTheme();
+ const {c,mode}=useTheme();
  const primary=variant==='primary';
  const quiet=variant==='quiet';
  return <Pressable accessibilityRole="button" onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:primary?c.blue:quiet?'transparent':c.card,borderWidth:primary||quiet?0:1,borderColor:c.border,borderRadius:12,paddingVertical:13,paddingHorizontal:16,minHeight:48,opacity:pressed?.78:1,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
-  {icon?<Ionicons name={icon} size={17} color={primary?'#FFFFFF':c.blue}/>:null}
-  <Text style={{color:primary?'#FFFFFF':c.text,fontWeight:'800',fontSize:13}}>{title}</Text>
+  {icon?<Ionicons name={icon} size={17} color={primary?(mode==='dark'?'#11141A':'#FFFFFF'):c.blue}/>:null}
+  <Text style={{color:primary?(mode==='dark'?'#11141A':'#FFFFFF'):c.text,fontWeight:'800',fontSize:13}}>{title}</Text>
  </Pressable>;
 }
