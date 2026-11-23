@@ -30,7 +30,7 @@ export default function Tests(){
  }catch(e){if(active)setError(e instanceof Error?e.message:'Could not load tests.')}finally{if(active)setLoading(false)}})();return()=>{active=false}},[userId]);
  const visible=useMemo(()=>tests.filter(t=>(filter==='all'||(filter==='free'?t.access_tier==='free':filter==='paid'?t.access_tier==='premium':attempts.some(a=>a.mock_test_id===t.id)))&&(!category||t.test_type===category)),[tests,filter,category,attempts]);
  const categoryCounts=useMemo(()=>Object.fromEntries(categories.map(x=>[x.type,tests.filter(t=>t.test_type===x.type).length])),[tests]);
- const start=(t:TestRow)=>{if(t.access_tier==='premium'&&!canAccessPaid){router.push('/payment');return;}router.push({pathname:'/quiz',params:{testId:t.id,testTitle:t.title,durationMinutes:String(t.duration_minutes)}})};
+ const start=(t:TestRow)=>{if(t.access_tier==='premium'&&!canAccessPaid){router.push('/premium');return;}router.push({pathname:'/quiz',params:{testId:t.id,testTitle:t.title,durationMinutes:String(t.duration_minutes)}})};
  const filterOptions=[{label:'All Tests',value:'all' as const},{label:'Free',value:'free' as const},{label:'Paid',value:'paid' as const},{label:'My Tests',value:'mine' as const}];
  return <ScrollView style={{backgroundColor:c.bg}} contentContainerStyle={{padding:17,paddingTop:14,gap:16,paddingBottom:44}}>
   <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>ASSESSMENT CENTRE</Text><Heading>Tests</Heading><Copy>Attempt mock tests and analyse your performance.</Copy></View>
