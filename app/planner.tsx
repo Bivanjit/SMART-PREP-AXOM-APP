@@ -22,11 +22,14 @@ export default function Planner(){
   if(when.getTime()<Date.now()-60000){Alert.alert('Choose a future time','A study session must be scheduled in the future.');return;}
   const minutes=Number(duration);
   if(!Number.isFinite(minutes)||minutes<5||minutes>720){Alert.alert('Invalid duration','Choose a duration between 5 and 720 minutes.');return;}
+  const rawSubject=subject.trim().toLowerCase();
+  const normalizedSubject=rawSubject.startsWith('phy')?'Physics':rawSubject.startsWith('chem')?'Chemistry':rawSubject.startsWith('math')?'Mathematics':rawSubject===''?null:null;
+  if(rawSubject&&!normalizedSubject){Alert.alert('Choose a valid subject','Use Physics, Chemistry or Mathematics.');return;}
   setBusy(true);
   try{
    let notificationId:string|null=null;
    if(remind){try{notificationId=await scheduleReminder(title.trim(),when)}catch{Alert.alert('Reminder not scheduled','Your study task will still be saved. Check notification permission in Android settings.')}}
-   const {error}=await supabase.from('study_tasks').insert({user_id:userId,title:title.trim(),subject:subject.trim()||null,scheduled_for:when.toISOString(),duration_minutes:minutes,reminder_at:remind?when.toISOString():null,local_notification_id:notificationId,recurrence});
+   const {error}=await supabase.from('study_tasks').insert({user_id:userId,title:title.trim(),subject:normalizedSubject,scheduled_for:when.toISOString(),duration_minutes:minutes,reminder_at:remind?when.toISOString():null,local_notification_id:notificationId,recurrence});
    if(error){if(notificationId)await Notifications.cancelScheduledNotificationAsync(notificationId).catch(()=>{});throw error;}
    setTitle('');
    await load();
