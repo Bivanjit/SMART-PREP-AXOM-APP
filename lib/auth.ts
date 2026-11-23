@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { unregisterDevicePushToken } from './push-notifications';
 
 export async function sendEmailCode(email: string) {
   if (!supabase) throw new Error('The app backend is not configured yet.');
@@ -28,6 +29,8 @@ export async function verifyEmailCode(email: string, token: string) {
 
 export async function signOut() {
   if (!supabase) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  await unregisterDevicePushToken(user?.id ?? null);
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
