@@ -5,12 +5,12 @@ export async function loadChapterQuestions(chapterId:string,language:'en'|'as'='
  if(!supabase) throw new Error('Backend is not configured.');
  let {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options,access_tier').eq('chapter_id',chapterId).eq('is_published',true).eq('language',language).order('created_at');
  if(error) throw error;
- if((data||[]).length===0&&language==='as'){const fallback=await supabase.from('questions').select('id,chapter_id,prompt,options').eq('chapter_id',chapterId).eq('is_published',true).eq('language','en').order('created_at');if(fallback.error)throw fallback.error;data=fallback.data;}
+ if(language==='as'){const fallback=await supabase.from('questions').select('id,chapter_id,prompt,options,access_tier').eq('chapter_id',chapterId).eq('is_published',true).eq('language','en').order('created_at');if(fallback.error)throw fallback.error;const seen=new Set((data||[]).map((q:any)=>q.id));data=[...(data||[]),...(fallback.data||[]).filter((q:any)=>!seen.has(q.id))] as any;}
  return (data||[]) as RemoteQuestion[];
 }
 export async function loadTestQuestions(testId:string){
  if(!supabase) throw new Error('Backend is not configured.');
- const {data,error}=await supabase.from('mock_test_questions').select('question_id,question_order,questions(id,chapter_id,prompt,options)').eq('mock_test_id',testId).order('question_order');
+ const {data,error}=await supabase.from('mock_test_questions').select('question_id,question_order,questions(id,chapter_id,prompt,options,access_tier)').eq('mock_test_id',testId).order('question_order');
  if(error) throw error;
  return (data||[]).map((r:any)=>r.questions).filter(Boolean) as RemoteQuestion[];
 }
@@ -28,9 +28,9 @@ export async function loadQuestionIds(questionIds:string[],language:'en'|'as'='e
  if(!supabase) throw new Error('Backend is not configured.');
  const ids=[...new Set(questionIds)].filter(Boolean);
  if(!ids.length) return [];
- let {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options').in('id',ids).eq('is_published',true).eq('language',language);
+ let {data,error}=await supabase.from('questions').select('id,chapter_id,prompt,options,access_tier').in('id',ids).eq('is_published',true).eq('language',language);
  if(error) throw error;
- if((data||[]).length===0&&language==='as'){const fallback=await supabase.from('questions').select('id,chapter_id,prompt,options').in('id',ids).eq('is_published',true).eq('language','en');if(fallback.error)throw fallback.error;data=fallback.data;}
+ if(language==='as'){const fallback=await supabase.from('questions').select('id,chapter_id,prompt,options,access_tier').in('id',ids).eq('is_published',true).eq('language','en');if(fallback.error)throw fallback.error;const seen=new Set((data||[]).map((q:any)=>q.id));data=[...(data||[]),...(fallback.data||[]).filter((q:any)=>!seen.has(q.id))] as any;}
  const byId=new Map((data||[]).map((q:any)=>[q.id,q]));
  return ids.map(id=>byId.get(id)).filter(Boolean) as RemoteQuestion[];
 }
