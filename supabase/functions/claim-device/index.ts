@@ -16,6 +16,9 @@ Deno.serve(async (req: Request) => {
     const deviceId = typeof body.device_id === "string" ? body.device_id : "";
     const platform = typeof body.platform === "string" ? body.platform : "unknown";
     if (deviceId.length < 16 || deviceId.length > 200) return Response.json({ error: "A valid device identity is required." }, { status: 400, headers: cors });
+    const { data: membership, error: membershipError } = await admin.from("memberships").select("id").eq("user_id", auth.user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["chapter_practice", "cee_complete"]).limit(1).maybeSingle();
+    if (membershipError) throw membershipError;
+    if (!membership) return Response.json({ error: "An active paid membership is required to register this device." }, { status: 403, headers: cors });
     const { data: allowed, error } = await admin.rpc("claim_paid_device", { p_user_id: auth.user.id, p_device_id: deviceId, p_platform: platform });
     if (error) throw error;
     if (!allowed) {
