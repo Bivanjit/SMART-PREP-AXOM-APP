@@ -25,7 +25,7 @@ export function Button({title,onPress,variant='primary',icon,disabled=false,load
  const primary=variant==='primary';
  const secondary=variant==='secondary';
  const quiet=variant==='quiet';
- const bg=unavailable?c.surfaceElevated:primary?c.amber:secondary?'transparent':'transparent';
+ const bg=unavailable?c.surfaceElevated:primary?c.accent:secondary?'transparent':'transparent';
  const fg=unavailable?c.textMuted:primary?'#FFFFFF':secondary?c.green:c.text;
  return <Pressable accessibilityRole="button" accessibilityState={{disabled:unavailable}} disabled={unavailable} onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:bg,borderWidth:secondary?1:0,borderColor:secondary?c.green:'transparent',borderRadius:12,paddingVertical:13,paddingHorizontal:16,minHeight:48,opacity:pressed?.78:1,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
   {loading?<ActivityIndicator size="small" color={fg}/>:icon?<Ionicons name={icon} size={17} color={fg}/>:null}
