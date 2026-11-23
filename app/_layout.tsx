@@ -11,7 +11,7 @@ import {designTokens,ThemeColors,AppMode} from '../lib/theme';
 void SplashScreen.preventAutoHideAsync().catch(()=>{});
 type Mode=AppMode;
 type Language='en'|'as';
-const colors=designTokens
+const colors=designTokens;
 type Attempt={id:string;title:string;score:number;max:number;correct:number;wrong:number;skipped:number;date:string};
 type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:Language)=>void;c:ThemeColors;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean};
 const Context=createContext<Theme|null>(null);
