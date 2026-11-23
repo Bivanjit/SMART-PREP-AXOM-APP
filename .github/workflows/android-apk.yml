@@ -6,6 +6,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main, v2-redesign, v3-unified-upgrade, v3-complete-redesign]
+permissions:
+  contents: write
 jobs:
   build-apk:
     runs-on: ubuntu-24.04
@@ -63,6 +65,25 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease
+      - name: Publish permanent GitHub Release
+        if: github.ref == 'refs/heads/v3-complete-redesign'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./app.json').expo.version")
+          TAG="v${VERSION}"
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          NOTES="SmartPrep Axom Android ${VERSION}
+
+          - Updated app experience and fixes
+          - Optional and mandatory in-app update support
+          - Download the APK from the SmartPrep Axom website: https://smart-axom-prep.vercel.app/app"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK#SmartPrep-Axom.apk" --clobber
+            gh release edit "$TAG" --title "SmartPrep Axom ${VERSION}" --notes "$NOTES" --latest
+          else
+            gh release create "$TAG" "$APK#SmartPrep-Axom.apk" --title "SmartPrep Axom ${VERSION}" --notes "$NOTES" --latest --target "$GITHUB_SHA"
+          fi
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
