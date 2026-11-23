@@ -6,16 +6,18 @@ import {Heading,Copy,Panel,Button} from '../components/ui';
 import {loadChapterQuestions,loadTestQuestions,RemoteQuestion,submitServerAttempt} from '../lib/backend';
 import {supabase} from '../lib/supabase';
 import {claimPaidDevice} from '../lib/device';
+import {usePreventScreenCapture} from 'expo-screen-capture';
+function PaidCaptureGuard(){usePreventScreenCapture('smartprep-paid-quiz');return null;}
 export default function Quiz(){
  const p=useLocalSearchParams<{subject:string;chapter:string;chapterId:string;testId:string;testTitle:string;durationMinutes:string}>();
  const {c,bookmarks,toggleBookmark,userId,language}=useTheme();
  const [list,setList]=useState<RemoteQuestion[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const [index,setIndex]=useState(0),[answers,setAnswers]=useState<Record<string,number>>({}),[review,setReview]=useState<string[]>([]);
- const [seconds,setSeconds]=useState(0),[submitting,setSubmitting]=useState(false),[draftReady,setDraftReady]=useState(false);
+ const [seconds,setSeconds]=useState(0),[submitting,setSubmitting]=useState(false),[draftReady,setDraftReady]=useState(false),[paidSession,setPaidSession]=useState(false);
  const [startedAt,setStartedAt]=useState(new Date().toISOString()),[deadlineAt,setDeadlineAt]=useState<string|null>(null);
  const lock=useRef(false),title=p.testTitle||String(p.subject)+' · '+String(p.chapter);
  useEffect(()=>{let live=true;void(async()=>{try{
-  let deviceError='';if(supabase&&userId){const {data:membership}=await supabase.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).in('product_code',['chapter_practice','cee_complete']).limit(1).maybeSingle();if(membership){try{await claimPaidDevice()}catch(e){deviceError=e instanceof Error?e.message:'Paid-device verification failed.'}}}const qs=p.testId?await loadTestQuestions(p.testId):await loadChapterQuestions(p.chapterId,language);if(!live)return;setList(qs);if(!qs.length&&deviceError)setError(deviceError);
+  let deviceError='';if(supabase&&userId){const {data:membership}=await supabase.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).in('product_code',['chapter_practice','cee_complete']).limit(1).maybeSingle();if(membership){setPaidSession(true);try{await claimPaidDevice()}catch(e){deviceError=e instanceof Error?e.message:'Paid-device verification failed.'}}}const qs=p.testId?await loadTestQuestions(p.testId):await loadChapterQuestions(p.chapterId,language);if(!live)return;setList(qs);if(!qs.length&&deviceError)setError(deviceError);
   if(p.testId&&supabase&&userId){const {data,error}=await supabase.from('attempt_drafts').select('answers,current_index,started_at,deadline_at').eq('user_id',userId).eq('test_id',p.testId).maybeSingle();if(error)throw error;
    if(data){setAnswers(data.answers||{});setIndex(Math.min(Number(data.current_index)||0,Math.max(0,qs.length-1)));setStartedAt(data.started_at);setDeadlineAt(data.deadline_at);}
    else{const start=new Date(),end=new Date(start.getTime()+Math.max(1,Number(p.durationMinutes)||180)*60000);setStartedAt(start.toISOString());setDeadlineAt(end.toISOString());}
