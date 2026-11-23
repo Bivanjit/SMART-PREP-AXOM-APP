@@ -8,9 +8,9 @@ import {tr} from '../../lib/i18n';
 type Icon=keyof typeof Ionicons.glyphMap;
 export default function TabsLayout(){
  const {c,userEmail,mode,setMode,language}=useTheme();const insets=useSafeAreaInsets();const {width:W}=useWindowDimensions();const [open,setOpen]=useState(false);
- const translateX=useRef(new Animated.Value(-Math.max(300,Math.min(W*.84,390)))).current;
+ const translateX=useRef(new Animated.Value(-W*.5)).current;
  const backdrop=useRef(new Animated.Value(0)).current;
- const drawerWidth=Math.max(300,Math.min(W*.84,390));
+ const drawerWidth=W*.5;
  useEffect(()=>{if(open){translateX.setValue(-drawerWidth);backdrop.setValue(0);Animated.parallel([Animated.spring(translateX,{toValue:0,useNativeDriver:true,damping:24,stiffness:210,mass:.85}),Animated.timing(backdrop,{toValue:1,duration:210,easing:Easing.out(Easing.quad),useNativeDriver:true})]).start();}},[open,drawerWidth,translateX,backdrop]);
  const close=()=>{Animated.parallel([Animated.timing(translateX,{toValue:-drawerWidth,duration:190,easing:Easing.in(Easing.cubic),useNativeDriver:true}),Animated.timing(backdrop,{toValue:0,duration:170,useNativeDriver:true})]).start(({finished})=>{if(finished)setOpen(false)})};
  const icons:Record<string,Icon>={index:'home-outline',batches:'people-outline',practice:'book-outline',tests:'clipboard-outline',profile:'person-circle-outline',lectures:'play-circle-outline',insights:'stats-chart-outline'};
@@ -18,7 +18,7 @@ export default function TabsLayout(){
  const item=(icon:Icon,label:string,path:string)=><Pressable key={label} onPress={()=>go(path)} accessibilityRole="button" style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:13,paddingVertical:14,borderBottomWidth:1,borderBottomColor:c.border,opacity:pressed?.65:1})}><Ionicons name={icon} size={21} color={c.blue}/><Text style={{fontSize:15,fontWeight:'600',color:c.text}}>{label}</Text><View style={{flex:1}}/><Ionicons name="chevron-forward" size={16} color={c.muted}/></Pressable>;
  return <>
  <Tabs screenOptions={({route})=>({headerShown:true,headerTitle:route.name==='index'?'SmartPrep Axom':route.name==='batches'?tr(language,'My Batches'):route.name==='practice'?'Study':route.name==='insights'?tr(language,'Learning insights'):route.name==='tests'?'Mock tests':route.name==='lectures'?tr(language,'Video lectures'):'Your profile',headerTitleStyle:{fontWeight:'800',fontSize:17,color:c.text},headerStyle:{backgroundColor:c.bg},headerShadowVisible:false,headerTintColor:c.text,headerLeft:()=> <Pressable accessibilityRole="button" accessibilityLabel="Open navigation menu" onPress={()=>setOpen(true)} style={{marginLeft:14,width:40,height:40,borderRadius:12,alignItems:'center',justifyContent:'center'}}><Ionicons name="menu" size={27} color={c.text}/></Pressable>,tabBarActiveTintColor:c.blue,tabBarInactiveTintColor:c.muted,tabBarStyle:{backgroundColor:c.card,borderTopColor:c.border,height:62+insets.bottom,paddingBottom:Math.max(8,insets.bottom),paddingTop:5},tabBarIcon:({color,size})=><Ionicons name={icons[route.name]||'ellipse-outline'} color={color} size={size}/>})}>
- <Tabs.Screen name="index" options={{title:tr(language,'Home')}}/><Tabs.Screen name="batches" options={{title:'Batches'}}/><Tabs.Screen name="practice" options={{title:'Study'}}/><Tabs.Screen name="tests" options={{title:'Tests'}}/><Tabs.Screen name="profile" options={{title:'Profile'}}/><Tabs.Screen name="lectures" options={{href:null}}/><Tabs.Screen name="insights" options={{href:null}}/>
+ <Tabs.Screen name="index" options={{title:tr(language,'Home')}}/><Tabs.Screen name="batches" options={{title:'Batches'}}/><Tabs.Screen name="practice" options={{title:'Study'}}/><Tabs.Screen name="tests" options={{title:'Tests'}}/><Tabs.Screen name="profile" options={{href:null}}/><Tabs.Screen name="lectures" options={{href:null}}/><Tabs.Screen name="insights" options={{href:null}}/>
  </Tabs>
  <Modal visible={open} transparent animationType="none" onRequestClose={close} statusBarTranslucent>
   <View style={{flex:1,flexDirection:'row'}}>
