@@ -45,6 +45,7 @@ export default function TabsLayout(){
      {item('clipboard-outline','Mock Tests','/(tabs)/tests')}
      {item('play-circle-outline','Video Lectures','/(tabs)/lectures')}
      {item('stats-chart-outline','Learning Insights','/(tabs)/insights')}
+     {item('chatbubbles-outline','Customer Support','/support')}
      {item('trophy-outline','Leaderboard & Leagues','/leaderboard')}
      <Text style={{fontSize:11,fontWeight:'800',letterSpacing:1,color:c.textMuted,marginTop:22,marginBottom:5}}>ACCOUNT & MORE</Text>
      {item('person-circle-outline','Profile & Account','/(tabs)/profile')}
