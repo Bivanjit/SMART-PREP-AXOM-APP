@@ -6,7 +6,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../_layout';
 import {tr} from '../../lib/i18n';
 import {supabase} from '../../lib/supabase';
-import BrandLogo from '../../components/BrandLogo';
 type Icon=keyof typeof Ionicons.glyphMap;
 export default function TabsLayout(){
  const {c,userEmail,userId,mode,setMode,language}=useTheme();const pathname=usePathname();const insets=useSafeAreaInsets();const {width:W}=useWindowDimensions();const [open,setOpen]=useState(false);const [profile,setProfile]=useState<{name:string;avatar:string|null;premium:boolean}>({name:'Student',avatar:null,premium:false});
