@@ -48,13 +48,36 @@ Deno.serve(async (req: Request) => {
       if (testError || !test || test.status !== "published") return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
       title = test.title;
       if (test.access_tier === "premium") {
-        const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
+        const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
       }
       const { data: rows, error: rowsError } = await admin.from("mock_test_questions")
         .select("question_id,marks,negative_marks,questions!inner(id,answer_key,explanation,is_published)")
         .eq("mock_test_id", testId).order("question_order");
       if (rowsError || !rows?.length) return Response.json({ error: "This test has no published questions yet." }, { status: 409, headers: cors });
+      for (const row of rows as any[]) {
+        if (!row.questions?.is_published) continue;
+        rules.set(row.question_id, { answer_key: row.questions.answer_key, explanation: row.questions.explanation, marks: Number(row.marks), negative: Number(row.negative_marks) });
+      }
+      maxScore = Array.from(rules.values()).reduce((sum, r) => sum + r.marks, 0);
+    } else if (pyqPaperId) {
+      const { data: paper, error: paperError } = await admin.from("pyq_papers")
+        .select("id,title,status,access_tier,total_marks").eq("id", pyqPaperId).maybeSingle();
+      if (paperError || !paper || paper.status !== "published") {
+        return Response.json({ error: "Previous-year paper is unavailable." }, { status: 404, headers: cors });
+      }
+      title = paper.title;
+      if (paper.access_tier === "premium") {
+        if (!user) return Response.json({ error: "Sign in to access this premium paper." }, { status: 401, headers: cors });
+        const { data: membership } = await admin.from("memberships").select("id")
+          .eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString())
+          .gt("expires_at", new Date().toISOString()).eq("product_code", "cee_complete").limit(1).maybeSingle();
+        if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
+      }
+      const { data: rows, error: rowsError } = await admin.from("pyq_paper_questions")
+        .select("question_id,marks,negative_marks,questions!inner(id,answer_key,explanation,is_published)")
+        .eq("paper_id", pyqPaperId).order("question_order");
+      if (rowsError || !rows?.length) return Response.json({ error: "This paper has no assigned questions yet." }, { status: 409, headers: cors });
       for (const row of rows as any[]) {
         if (!row.questions?.is_published) continue;
         rules.set(row.question_id, { answer_key: row.questions.answer_key, explanation: row.questions.explanation, marks: Number(row.marks), negative: Number(row.negative_marks) });
@@ -67,7 +90,7 @@ Deno.serve(async (req: Request) => {
       if (qError || !questions?.length) return Response.json({ error: "Questions unavailable." }, { status: 404, headers: cors });
       if (questions.some(q => q.access_tier === "premium")) {
         if (!user) return Response.json({ error: "Sign in to submit premium chapter practice." }, { status: 401, headers: cors });
-        const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").gt("expires_at", new Date().toISOString()).in("product_code", ["chapter_practice","cee_complete"]).limit(1).maybeSingle();
+        const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["chapter_practice","cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active chapter practice membership is required." }, { status: 403, headers: cors });
       }
       for (const q of questions) if (q.is_published) rules.set(q.id, { answer_key: q.answer_key, explanation: q.explanation, marks: 4, negative: 1 });
