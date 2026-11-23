@@ -16,7 +16,7 @@ export function Copy({children,style}:{children:React.ReactNode;style?:TextStyle
 }
 export function Panel({children,style}:{children:React.ReactNode;style?:ViewStyle}){
  const {c}=useTheme();
- return <View style={[{backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:18,padding:16,gap:11,shadowColor:'#0F172A',shadowOpacity:.035,shadowRadius:10,shadowOffset:{width:0,height:3},elevation:1},style]}>{children}</View>;
+ return <View style={[{backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:18,padding:16,gap:11,shadowColor:'#0F172A',shadowOpacity:.055,shadowRadius:12,shadowOffset:{width:0,height:4},elevation:2},style]}>{children}</View>;
 }
 type ButtonVariant='primary'|'secondary'|'quiet'|'disabled';
 export function Button({title,onPress,variant='primary',icon,disabled=false,loading=false}:{title:string;onPress:()=>void;variant?:ButtonVariant;icon?:keyof typeof Ionicons.glyphMap;disabled?:boolean;loading?:boolean}){
@@ -27,7 +27,7 @@ export function Button({title,onPress,variant='primary',icon,disabled=false,load
  const quiet=variant==='quiet';
  const bg=unavailable?c.surfaceElevated:primary?c.accent:secondary?'transparent':'transparent';
  const fg=unavailable?c.textMuted:primary?'#FFFFFF':secondary?c.green:c.text;
- return <Pressable accessibilityRole="button" accessibilityState={{disabled:unavailable}} disabled={unavailable} onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:bg,borderWidth:secondary?1:0,borderColor:secondary?c.green:'transparent',borderRadius:14,paddingVertical:14,paddingHorizontal:18,minHeight:50,opacity:pressed?.78:1,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
+ return <Pressable accessibilityRole="button" accessibilityState={{disabled:unavailable}} disabled={unavailable} onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:bg,borderWidth:secondary?1:0,borderColor:secondary?c.green:'transparent',borderRadius:15,paddingVertical:14,paddingHorizontal:18,minHeight:50,opacity:pressed?.78:1,shadowColor:primary?c.amber:'transparent',shadowOpacity:primary?.2:0,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:primary?3:0,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
   {loading?<ActivityIndicator size="small" color={fg}/>:icon?<Ionicons name={icon} size={17} color={fg}/>:null}
   <Text style={{color:fg,fontWeight:'800',fontSize:13}}>{title}</Text>
  </Pressable>;
@@ -63,5 +63,5 @@ export function ProgressRing({value,size=76,stroke=7}:{value:number;size?:number
 }
 export function CardRow({icon,title,description,onPress,accent}:{icon:keyof typeof Ionicons.glyphMap;title:string;description:string;onPress:()=>void;accent?:string}){
  const {c}=useTheme();
- return <Pressable onPress={onPress} accessibilityRole="button" style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:12,padding:14,borderRadius:14,borderWidth:1,borderColor:c.border,backgroundColor:c.card,opacity:pressed?.75:1})}><View style={{width:42,height:42,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={21} color={accent||c.green}/></View><View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{title}</Text><Text style={{fontSize:11,color:c.textSecondary}}>{description}</Text></View><Ionicons name="chevron-forward" size={17} color={c.textMuted}/></Pressable>;
+ return <Pressable onPress={onPress} accessibilityRole="button" style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:12,padding:14,borderRadius:16,borderWidth:1,borderColor:c.border,backgroundColor:c.card,opacity:pressed?.75:1,shadowColor:'#0F172A',shadowOpacity:.045,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:1})}><View style={{width:42,height:42,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={21} color={accent||c.green}/></View><View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{title}</Text><Text style={{fontSize:11,color:c.textSecondary}}>{description}</Text></View><Ionicons name="chevron-forward" size={17} color={c.textMuted}/></Pressable>;
 }
