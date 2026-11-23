@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ScrollView,View,Text,Pressable,ActivityIndicator,Image,ImageBackground} from 'react-native';
 import {router} from 'expo-router';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
@@ -18,7 +19,7 @@ function SectionTitle({title,action,onPress}:{title:string;action?:string;onPres
  const {c}=useTheme();return <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Heading style={{fontSize:17}}>{title}</Heading>{action&&onPress?<Pressable onPress={onPress}><Text style={{fontSize:11,fontWeight:'800',color:c.green}}>{action}</Text></Pressable>:null}</View>;
 }
 export default function Home(){
- const {c,userEmail,userId,bookmarks,language}=useTheme();
+ const {c,userEmail,userId,bookmarks,language}=useTheme();const insets=useSafeAreaInsets();
  const [data,setData]=useState<HomeData>({name:'Student',avatar:null,premium:false,attempts:0,publishedQuestions:0,attemptedQuestions:0,weeklyXp:0,unread:0,saved:bookmarks.length,latestLecture:null});
  const [loading,setLoading]=useState(true),[premiumDismissed,setPremiumDismissed]=useState(false);const [hero,setHero]=useState({title:'Assam CEE',year:'2027',description:'Complete preparation for Physics, Chemistry & Mathematics.',image:assamHero});
  useEffect(()=>{let live=true;void AsyncStorage.getItem('smartprep.premium.dismissed').then(v=>{if(live)setPremiumDismissed(v==='true')}).catch(()=>{});return()=>{live=false}},[]);
@@ -50,8 +51,9 @@ export default function Home(){
  const coverage=useMemo(()=>data.publishedQuestions?Math.min(100,Math.round(data.attemptedQuestions/data.publishedQuestions*100)):0,[data]);
  const greeting=data.name.split(' ')[0]||'Student';
  const dismissPremium=()=>{setPremiumDismissed(true);void AsyncStorage.setItem('smartprep.premium.dismissed','true')};
- return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{paddingHorizontal:16,paddingTop:10,paddingBottom:38,gap:17}}>
+ return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{paddingHorizontal:16,paddingTop:Math.max(12,insets.top+8),paddingBottom:38,gap:17}}>
   <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
+   <Pressable onPress={()=>router.push('/(tabs)/profile')} accessibilityLabel="Open profile" style={{width:42,height:42,borderRadius:21,overflow:'hidden',borderWidth:1,borderColor:c.border,backgroundColor:c.card,alignItems:'center',justifyContent:'center'}}>{data.avatar?<Image source={{uri:data.avatar}} style={{width:42,height:42,borderRadius:21}}/>:<Ionicons name="person-circle-outline" size={36} color={c.primary}/>}</Pressable>
    <Image source={require('../../assets/icon.png')} style={{width:38,height:38,borderRadius:11}} resizeMode="contain"/>
    <View style={{flex:1,gap:1}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>SmartPrep Axom</Text><Text style={{fontSize:9,color:c.textMuted}}>Prepare Smarter. Perform Better.</Text></View>
    <Pressable onPress={()=>router.push('/leaderboard')} accessibilityLabel="Leaderboard" style={{width:38,height:38,borderRadius:12,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy-outline" size={19} color={c.amber}/></Pressable>
