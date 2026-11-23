@@ -53,13 +53,6 @@ export default function Home(){
  const dismissPremium=()=>{setPremiumDismissed(true);void AsyncStorage.setItem('smartprep.premium.dismissed','true')};
  return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{paddingHorizontal:16,paddingTop:8,paddingBottom:38,gap:17}}>
   <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
-   <Pressable onPress={()=>router.push('/(tabs)/profile')} accessibilityLabel="Open profile" style={{width:42,height:42,borderRadius:21,overflow:'hidden',borderWidth:1,borderColor:c.border,backgroundColor:c.card,alignItems:'center',justifyContent:'center'}}>{data.avatar?<Image source={{uri:data.avatar}} style={{width:42,height:42,borderRadius:21}}/>:<Ionicons name="person-circle-outline" size={36} color={c.primary}/>}</Pressable>
-   <BrandLogo size={40}/>
-   <View style={{flex:1,gap:1}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>SmartPrep Axom</Text><Text style={{fontSize:9,color:c.textMuted}}>Prepare Smarter. Perform Better.</Text></View>
-   <Pressable onPress={()=>router.push('/leaderboard')} accessibilityLabel="Leaderboard" style={{width:38,height:38,borderRadius:12,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy-outline" size={19} color={c.amber}/></Pressable>
-   <Pressable onPress={()=>router.push('/notifications')} accessibilityLabel="Notifications" style={{width:38,height:38,borderRadius:12,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="notifications-outline" size={19} color={c.text}/>{data.unread>0?<View style={{position:'absolute',right:7,top:7,width:7,height:7,borderRadius:4,backgroundColor:c.error}}/>:null}</Pressable>
-  </View>
-  <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
    {data.avatar?<Image source={{uri:data.avatar}} style={{width:42,height:42,borderRadius:21}}/>:<View style={{width:42,height:42,borderRadius:21,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="person" size={20} color={c.primary}/></View>}
    <View style={{flex:1,gap:2}}><Text style={{fontSize:16,fontWeight:'900',color:c.text}}>Hi, {greeting}</Text><Text style={{fontSize:11,color:c.textSecondary}}>Ready for today's study session?</Text></View>
    <View style={{backgroundColor:data.premium?c.amber:c.surfaceElevated,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:10,fontWeight:'900',color:data.premium?'#FFFFFF':c.textSecondary}}>{data.premium?'Premium Member':'Free Plan'}</Text></View>
