@@ -29,7 +29,8 @@ export default function Quiz(){
  useEffect(()=>{if(!draftReady||!p.testId||!supabase||!userId)return;const t=setTimeout(()=>{void supabase!.from('attempt_drafts').upsert({user_id:userId,test_id:p.testId,answers,current_index:index,started_at:startedAt,deadline_at:deadlineAt,updated_at:new Date().toISOString()},{onConflict:'user_id,test_id'}).then(({error})=>{if(error)console.warn('Draft autosave failed:',error.message)})},500);return()=>clearTimeout(t)},[answers,index,draftReady,p.testId,userId,startedAt,deadlineAt]);
  async function chooseAnswer(question:RemoteQuestion,optionIndex:number){
   if(checking)return;const selected=String.fromCharCode(65+optionIndex);
-  if(isTestMode){setAnswers(old=>({...old,[question.id]:optionIndex}));void Haptics.selectionAsync().catch(()=>{});return;}
+  setAnswers(old=>({...old,[question.id]:optionIndex}));void Haptics.selectionAsync().catch(()=>{});
+  if(isTestMode)return;
   setChecking(true);
   try{
    if(!supabase)throw new Error('Backend is not configured.');
@@ -38,7 +39,7 @@ export default function Quiz(){
    setAnswers(old=>({...old,[question.id]:optionIndex}));
    setFeedback(old=>({...old,[question.id]:{is_correct:!!data.is_correct,correct_answer:data.correct_answer,explanation:data.explanation||null}}));
    void Haptics.notificationAsync(data.is_correct?Haptics.NotificationFeedbackType.Success:Haptics.NotificationFeedbackType.Error).catch(()=>{});
-  }catch(e){Alert.alert('Could not check answer',e instanceof Error?e.message:'Try again.');}
+  }catch(e){console.warn('Answer check unavailable; selection retained:',e instanceof Error?e.message:e);}
   finally{setChecking(false);}
  }
  async function submit(auto=false){if(lock.current||submitting)return;lock.current=true;setSubmitting(true);try{const result=await submitServerAttempt({testId:p.testId,pyqPaperId:p.pyqPaperId,customTest:p.customTest==='1',questionIds:list.map(x=>x.id),title,answers:list.map(x=>({question_id:x.id,selected_answer:answers[x.id]===undefined?null:String.fromCharCode(65+answers[x.id])}))});if(p.testId&&supabase&&userId)await supabase.from('attempt_drafts').delete().eq('user_id',userId).eq('test_id',p.testId);if(p.batchItemId&&supabase&&userId){await supabase.from('batch_item_progress').upsert({user_id:userId,batch_item_id:p.batchItemId,progress_percent:100,completed_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:'user_id,batch_item_id'});}router.replace({pathname:'/results',params:{result:JSON.stringify(result),title,elapsed:String(Math.max(0,Math.floor((Date.now()-new Date(startedAt).getTime())/1000)))}});}catch(e){lock.current=false;Alert.alert(auto?'Auto-submit failed':'Could not submit',e instanceof Error?e.message:'Check your connection. Your answers are saved.')}finally{setSubmitting(false)}}
