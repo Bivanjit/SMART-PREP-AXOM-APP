@@ -1,8 +1,8 @@
-name: Build Android test APK
+name: Build SmartPrep Axom V2.0 Release APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, v2-redesign]
     paths:
       - 'app/**'
       - 'components/**'
@@ -10,6 +10,9 @@ on:
       - 'lib/**'
       - 'package.json'
       - 'app.json'
+      - 'tsconfig.json'
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
       - '.env'
       - '.github/workflows/android-apk.yml'
 jobs:
@@ -72,7 +75,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: smartprep-axom-android-release
+          name: smartprep-axom-v2-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
