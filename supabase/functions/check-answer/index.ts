@@ -17,7 +17,7 @@ Deno.serve(async(req:Request)=>{
   if(error||!q||!q.is_published)return Response.json({error:"Question is unavailable."},{status:404,headers:cors});
   if(q.access_tier==="premium"){
    if(!user)return Response.json({error:"Sign in to answer premium questions."},{status:401,headers:cors});
-   const {data:m}=await admin.from("memberships").select("id").eq("user_id",user.id).eq("status","active").gt("expires_at",new Date().toISOString()).in("product_code",["chapter_practice","cee_complete"]).limit(1).maybeSingle();
+   const {data:m}=await admin.from("memberships").select("id").eq("user_id",user.id).eq("status","active").lte("starts_at",new Date().toISOString()).gt("expires_at",new Date().toISOString()).in("product_code",["chapter_practice","cee_complete"]).limit(1).maybeSingle();
    if(!m)return Response.json({error:"An active practice membership is required."},{status:403,headers:cors});
   }
   return Response.json({question_id:id,selected_answer:selected,is_correct:selected===q.answer_key.trim().toUpperCase(),correct_answer:q.answer_key,explanation:q.explanation||null},{headers:cors});
