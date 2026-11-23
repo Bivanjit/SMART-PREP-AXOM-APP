@@ -1,43 +1,44 @@
-import React,{useEffect,useState} from 'react';
-import {ScrollView,ActivityIndicator,View,Text,Pressable} from 'react-native';
+import React,{useEffect,useMemo,useState} from 'react';
+import {ScrollView,View,Text,Pressable,ActivityIndicator} from 'react-native';
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
-import {Heading,Copy,Panel,Button} from '../../components/ui';
+import {Heading,Copy,Panel,Button,CardRow,SegmentedTabs,EmptyState,SubjectBadge} from '../../components/ui';
 
-type TestRow={id:string;title:string;description:string|null;duration_minutes:number;total_marks:number;access_tier:string;status:string};
+type TestRow={id:string;title:string;description:string|null;duration_minutes:number;total_marks:number;access_tier:string;status:string;test_type:string;subject_id:string|null;chapter_id:string|null;};
+type TestType='full_length'|'subject_wise'|'chapter'|'previous_year'|'custom';
+type Filter='all'|'free'|'paid'|'mine';
+const categories:{type:TestType;title:string;description:string;icon:keyof typeof Ionicons.glyphMap}[]=[
+ {type:'full_length',title:'Full Length Mock Tests',description:'Complete Assam CEE examination simulation · 3 hours',icon:'timer-outline'},
+ {type:'subject_wise',title:'Subject Wise Tests',description:'Focused Physics, Chemistry and Mathematics tests',icon:'layers-outline'},
+ {type:'chapter',title:'Chapter Tests',description:'Topic-focused tests for quick practice',icon:'book-outline'},
+ {type:'previous_year',title:'Previous Year Papers',description:'Assam CEE paper archive, 2018–2026',icon:'calendar-outline'},
+ {type:'custom',title:'Custom Test',description:'Create your own test with selected subjects and chapters',icon:'options-outline'}
+];
 export default function Tests(){
  const {c,userId}=useTheme();
- const [tests,setTests]=useState<TestRow[]>([]),[canAccessPaid,setCanAccessPaid]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
- const [filter,setFilter]=useState<'all'|'free'|'paid'>('all');
- useEffect(()=>{let active=true;void(async()=>{
-  if(!supabase){setLoading(false);return}
-  const {data,error}=await supabase.from('mock_tests').select('id,title,description,duration_minutes,total_marks,access_tier,status').eq('status','published').order('created_at');
-  if(!active)return;if(error)setError(error.message);setTests((data||[]) as TestRow[]);
-  if(userId){const {data:member}=await supabase.from('memberships').select('id').eq('user_id',userId).eq('product_code','cee_complete').eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).maybeSingle();if(active)setCanAccessPaid(Boolean(member))}
-  setLoading(false);
- })();return()=>{active=false}},[userId]);
- const visible=tests.filter(t=>filter==='all'||(filter==='free'?t.access_tier==='free':t.access_tier==='premium'));
- return <ScrollView style={{backgroundColor:c.bg}} contentContainerStyle={{padding:18,paddingTop:16,gap:16,paddingBottom:40}}>
-  <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>ASSESSMENT CENTRE</Text><Heading>Mock tests</Heading><Copy>Practise under timed conditions and review your performance after each submission.</Copy></View>
-  <View style={{backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:17,padding:15,flexDirection:'row',alignItems:'center',gap:12}}>
-   <View style={{width:43,height:43,borderRadius:13,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name="clipboard-outline" size={22} color={c.blue}/></View>
-   <View style={{flex:1,gap:3}}><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>Assam CEE test series</Text><Copy>Published tests follow the configured PCM exam structure.</Copy></View>
-  </View>
-  <View style={{flexDirection:'row',gap:8}}>{(['all','free','paid'] as const).map(x=><Pressable key={x} onPress={()=>setFilter(x)} style={{flex:1,paddingVertical:11,borderRadius:11,alignItems:'center',backgroundColor:filter===x?c.blue:c.card,borderWidth:1,borderColor:filter===x?c.blue:c.border}}><Text style={{color:filter===x?'#FFFFFF':c.text,fontWeight:'800',fontSize:12}}>{x==='all'?'All tests':x==='free'?'Free':'Premium'}</Text></Pressable>)}</View>
-  {loading?<ActivityIndicator color={c.blue} size="large"/>:error?<Panel><Copy>{error}</Copy></Panel>:visible.length?visible.map(t=><Panel key={t.id} style={{gap:12}}>
-   <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
-    <View style={{width:42,height:42,borderRadius:13,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name="document-text-outline" size={21} color={c.blue}/></View>
-    <View style={{flex:1,gap:2}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{t.title}</Text><Text style={{fontSize:10,fontWeight:'900',color:t.access_tier==='free'?c.green:c.amber}}>{t.access_tier==='free'?'FREE TEST':'PREMIUM TEST'}</Text></View>
-    <Ionicons name="chevron-forward" size={18} color={c.muted}/>
-   </View>
-   {t.description?<Copy>{t.description}</Copy>:null}
-   <View style={{flexDirection:'row',gap:8}}>
-    <View style={{flex:1,backgroundColor:c.bg,borderRadius:10,padding:10}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{t.duration_minutes} min</Text><Text style={{fontSize:10,color:c.muted}}>Duration</Text></View>
-    <View style={{flex:1,backgroundColor:c.bg,borderRadius:10,padding:10}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{t.total_marks}</Text><Text style={{fontSize:10,color:c.muted}}>Total marks</Text></View>
-   </View>
-   <Button title={t.access_tier==='premium'&&!canAccessPaid?'View membership':'Start test'} onPress={()=>t.access_tier==='premium'&&!canAccessPaid?router.push('/payment'):router.push({pathname:'/quiz',params:{testId:t.id,testTitle:t.title,durationMinutes:String(t.duration_minutes)}})} icon={t.access_tier==='premium'&&!canAccessPaid?'lock-closed-outline':'play-outline'}/>
-  </Panel>):<Panel><View style={{alignItems:'center',gap:8,paddingVertical:12}}><Ionicons name="documents-outline" size={30} color={c.muted}/><Text style={{fontWeight:'900',color:c.text}}>No published tests yet</Text><Copy style={{textAlign:'center'}}>New tests will appear here when the SmartPrep team publishes them.</Copy></View></Panel>}
+ const [tests,setTests]=useState<TestRow[]>([]),[attempts,setAttempts]=useState<any[]>([]),[canAccessPaid,setCanAccessPaid]=useState(false);
+ const [loading,setLoading]=useState(true),[error,setError]=useState(''),[filter,setFilter]=useState<Filter>('all'),[category,setCategory]=useState<TestType|null>(null);
+ useEffect(()=>{let active=true;void(async()=>{if(!supabase){setLoading(false);return;}try{
+  const {data,error}=await supabase.from('mock_tests').select('id,title,description,duration_minutes,total_marks,access_tier,status,test_type,subject_id,chapter_id').eq('status','published').order('display_order').order('created_at');
+  if(error)throw error;if(!active)return;setTests((data||[]) as TestRow[]);
+  if(userId){const [{data:member},{data:history}]=await Promise.all([
+   supabase.from('memberships').select('id').eq('user_id',userId).eq('product_code','cee_complete').eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle(),
+   supabase.from('attempts').select('id,title,score,max_score,submitted_at,mock_test_id').eq('user_id',userId).eq('source','mock_test').order('submitted_at',{ascending:false}).limit(100)
+  ]);if(active){setCanAccessPaid(Boolean(member));setAttempts(history||[])}}
+ }catch(e){if(active)setError(e instanceof Error?e.message:'Could not load tests.')}finally{if(active)setLoading(false)}})();return()=>{active=false}},[userId]);
+ const visible=useMemo(()=>tests.filter(t=>(filter==='all'||(filter==='free'?t.access_tier==='free':filter==='paid'?t.access_tier==='premium':attempts.some(a=>a.mock_test_id===t.id)))&&(!category||t.test_type===category)),[tests,filter,category,attempts]);
+ const categoryCounts=useMemo(()=>Object.fromEntries(categories.map(x=>[x.type,tests.filter(t=>t.test_type===x.type).length])),[tests]);
+ const start=(t:TestRow)=>{if(t.access_tier==='premium'&&!canAccessPaid){router.push('/payment');return;}router.push({pathname:'/quiz',params:{testId:t.id,testTitle:t.title,durationMinutes:String(t.duration_minutes)}})};
+ const filterOptions=[{label:'All Tests',value:'all' as const},{label:'Free',value:'free' as const},{label:'Paid',value:'paid' as const},{label:'My Tests',value:'mine' as const}];
+ return <ScrollView style={{backgroundColor:c.bg}} contentContainerStyle={{padding:17,paddingTop:14,gap:16,paddingBottom:44}}>
+  <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>ASSESSMENT CENTRE</Text><Heading>Tests</Heading><Copy>Attempt mock tests and analyse your performance.</Copy></View>
+  <SegmentedTabs options={filterOptions} value={filter} onChange={v=>{setFilter(v);setCategory(null)}}/>
+  {!category?<View style={{gap:10}}><Heading style={{fontSize:17}}>Test Categories</Heading>{categories.map(item=><CardRow key={item.type} icon={item.icon} title={item.title} description={item.type==='custom'?item.description:(categoryCounts[item.type]||0)+' published tests · '+item.description} onPress={()=>item.type==='custom'?router.push('/test-builder'):setCategory(item.type)}/>)}</View>:<View style={{gap:10}}><Pressable onPress={()=>setCategory(null)} style={{flexDirection:'row',alignItems:'center',gap:7}}><Ionicons name="chevron-back" size={17} color={c.green}/><Text style={{fontSize:12,fontWeight:'900',color:c.green}}>All test categories</Text></Pressable><Heading style={{fontSize:18}}>{categories.find(x=>x.type===category)?.title}</Heading></View>}
+  {loading?<ActivityIndicator color={c.green} size="large"/>:error?<EmptyState icon="cloud-offline-outline" title="Tests unavailable" description={error}/>:null}
+  {filter==='mine'?<View style={{gap:10}}><Heading style={{fontSize:17}}>Your test history</Heading>{attempts.length?attempts.map(a=><Panel key={a.id} style={{gap:5}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{a.title}</Text><Text style={{fontSize:18,fontWeight:'900',color:c.green}}>{a.score} / {a.max_score}</Text><Copy>{a.submitted_at?new Date(a.submitted_at).toLocaleString():'Submitted test'}</Copy></Panel>):<EmptyState icon="clipboard-outline" title="No completed tests yet" description="Your submitted mock tests will appear here."/ >}</View>:null}
+  {filter!=='mine'&&category!==null?(visible.length?visible.map(t=><Panel key={t.id} style={{gap:11}}><View style={{flexDirection:'row',alignItems:'center',gap:10}}><View style={{width:43,height:43,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="document-text-outline" size={21} color={c.primary}/></View><View style={{flex:1,gap:3}}><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>{t.title}</Text><Text style={{fontSize:9,fontWeight:'900',color:t.access_tier==='free'?c.green:c.amber}}>{t.access_tier==='free'?'FREE TEST':'PREMIUM TEST'}</Text></View></View>{t.description?<Copy>{t.description}</Copy>:null}<View style={{flexDirection:'row',gap:8}}><View style={{flex:1,backgroundColor:c.surfaceElevated,borderRadius:10,padding:10}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{t.duration_minutes} min</Text><Text style={{fontSize:10,color:c.textSecondary}}>Duration</Text></View><View style={{flex:1,backgroundColor:c.surfaceElevated,borderRadius:10,padding:10}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{t.total_marks}</Text><Text style={{fontSize:10,color:c.textSecondary}}>Total marks</Text></View></View><Button title={t.access_tier==='premium'&&!canAccessPaid?'Unlock premium test':'Start Test'} onPress={()=>start(t)} icon={t.access_tier==='premium'&&!canAccessPaid?'lock-closed-outline':'play-outline'}/></Panel>):<EmptyState icon="clipboard-outline" title="No published tests in this category" description="The category is ready. Your tests will appear here after you add questions and publish them from the admin console."/ >):null}
+  {filter!=='mine'&&category===null?<Panel style={{gap:7}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><Ionicons name="analytics-outline" size={20} color={c.green}/><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>Performance Analysis</Text></View><Copy>Review accuracy, time management, subject performance and score trends after completing tests.</Copy><Button title="View Learning Insights" variant="secondary" onPress={()=>router.push('/(tabs)/insights')}/></Panel>:null}
  </ScrollView>;
 }
