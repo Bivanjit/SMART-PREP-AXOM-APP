@@ -32,6 +32,7 @@
       ],
       "expo-notifications"
     ],
-    "icon": "./assets/icon.png"
+    "icon": "./assets/icon.png",
+    "description": "SmartPrep Axom Assam CEE preparation app — version 3.5.2"
   }
 }
