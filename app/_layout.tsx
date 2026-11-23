@@ -6,6 +6,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useColorScheme} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import * as Notifications from 'expo-notifications';
+import {registerDevicePushToken} from '../lib/push-notifications';
 import {supabase} from '../lib/supabase';
 void SplashScreen.preventAutoHideAsync().catch(()=>{});
 type Mode='light'|'dark';
@@ -23,6 +25,7 @@ export default function Layout(){
  return()=>{alive=false;unsubscribe?.()};
  },[]);
  const setMode=(m:Mode)=>{change(m);void AsyncStorage.setItem('smartprep.mode',m)};const setLanguage=(l:Language)=>{changeLanguage(l);void AsyncStorage.setItem('smartprep.language',l);if(userId&&supabase)void supabase.from('profiles').upsert({id:userId,email:userEmail,preferred_language:l,updated_at:new Date().toISOString()},{onConflict:'id'}).then(({error})=>{if(error)console.warn('Language preference sync failed:',error.message)})};
+ useEffect(()=>{if(!userId)return;let active=true;let cleanup:(()=>void)|undefined;void registerDevicePushToken(userId).then(stop=>{if(active)cleanup=stop;else stop()}).catch(error=>console.warn('FCM registration failed:',error));const openFromNotification=(response:Notifications.NotificationResponse|null)=>{if(!response)return;const data=response.notification.request.content.data as {action_path?:unknown};const path=typeof data?.action_path==='string'&&data.action_path.startsWith('/')&&!data.action_path.startsWith('//')?data.action_path:'/notifications';router.push(path as never);};const responseSubscription=Notifications.addNotificationResponseReceivedListener(openFromNotification);void Notifications.getLastNotificationResponseAsync().then(response=>{if(response){openFromNotification(response);void Notifications.clearLastNotificationResponseAsync()}});return()=>{active=false;cleanup?.();responseSubscription.remove()};},[userId]);
  useEffect(()=>{if(authLoading||onboardingChecked)return;void AsyncStorage.getItem('smartprep.onboarding.complete').then(done=>{if(!done&&pathname!=='/welcome')router.replace('/welcome');setOnboardingChecked(true)}).catch(()=>setOnboardingChecked(true))},[authLoading,onboardingChecked,pathname]);
  const toggleBookmark=(id:string)=>{const adding=!bookmarks.includes(id);const next=adding?[...bookmarks,id]:bookmarks.filter(x=>x!==id);setBookmarks(next);if(userId){void AsyncStorage.setItem('smartprep:'+userId+':bookmarks',JSON.stringify(next));if(supabase){const task=adding?supabase.from('user_bookmarks').insert({user_id:userId,question_id:id}):supabase.from('user_bookmarks').delete().eq('user_id',userId).eq('question_id',id);void task.then(({error})=>{if(error)console.warn('Bookmark sync failed:',error.message)})}}};
  const saveAttempt=(a:Attempt)=>setAttempts(old=>{const next=[a,...old].slice(0,100);if(userId)void AsyncStorage.setItem('smartprep:'+userId+':attempts',JSON.stringify(next));return next});

@@ -5,13 +5,14 @@ import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {supabase} from '../lib/supabase';
+import {unregisterDevicePushToken} from '../lib/push-notifications';
 import {useTheme} from './_layout';
 
 type Mode='signin'|'signup'|'verify-signup'|'otp-signin'|'reset';
 const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const friendly=(e:unknown)=>e instanceof Error?e.message:'Something went wrong. Please try again.';
 export default function AuthScreen(){
- const {c,userEmail}=useTheme();const insets=useSafeAreaInsets();
+ const {c,userEmail,userId}=useTheme();const insets=useSafeAreaInsets();
  const [email,setEmail]=useState(''),[name,setName]=useState(''),[password,setPassword]=useState(''),[confirm,setConfirm]=useState('');
  const [mode,setMode]=useState<Mode>('signin'),[busy,setBusy]=useState(false),[otp,setOtp]=useState(''),[showPassword,setShowPassword]=useState(false),[resendIn,setResendIn]=useState(0);
  useEffect(()=>{if(resendIn<=0)return;const timer=setTimeout(()=>setResendIn(v=>Math.max(0,v-1)),1000);return()=>clearTimeout(timer)},[resendIn]);
@@ -50,7 +51,7 @@ export default function AuthScreen(){
     <Text style={{fontSize:25,fontWeight:'900',letterSpacing:-.8,color:c.text}}>SmartPrep Axom</Text>
     <Text style={{fontSize:12,color:c.muted}}>Prepare Smarter. Perform Better.</Text>
    </View>
-   {userEmail?<View style={{gap:15}}><Text style={{fontSize:23,fontWeight:'900',color:c.text}}>You're signed in</Text><Text style={{fontSize:14,color:c.muted}}>{userEmail}</Text><Pressable onPress={goHome} style={{backgroundColor:c.blue,borderRadius:12,padding:16,alignItems:'center'}}><Text style={{color:'#FFFFFF',fontWeight:'800'}}>Continue to SmartPrep</Text></Pressable><Pressable onPress={()=>void supabase?.auth.signOut()}><Text style={{color:c.blue,textAlign:'center',fontWeight:'700'}}>Sign out</Text></Pressable></View>:<View style={{gap:17}}>
+   {userEmail?<View style={{gap:15}}><Text style={{fontSize:23,fontWeight:'900',color:c.text}}>You're signed in</Text><Text style={{fontSize:14,color:c.muted}}>{userEmail}</Text><Pressable onPress={goHome} style={{backgroundColor:c.blue,borderRadius:12,padding:16,alignItems:'center'}}><Text style={{color:'#FFFFFF',fontWeight:'800'}}>Continue to SmartPrep</Text></Pressable><Pressable onPress={()=>void (async()=>{await unregisterDevicePushToken(userId);await supabase?.auth.signOut()})()}><Text style={{color:c.blue,textAlign:'center',fontWeight:'700'}}>Sign out</Text></Pressable></View>:<View style={{gap:17}}>
     <View style={{gap:5}}><Text style={{fontSize:23,fontWeight:'900',color:c.text}}>{title}</Text><Text style={{fontSize:13,color:c.muted,lineHeight:19}}>{mode==='signup'?'Create your student account to begin your Assam CEE 2027 preparation.':mode==='verify-signup'?'Enter the 6-digit verification code sent to '+email+'.':mode==='otp-signin'?'Enter the sign-in code sent to '+email+'.':mode==='reset'?'We will send a secure password reset link to your email.':'Welcome back to SmartPrep Axom.'}</Text></View>
     {mode!=='verify-signup'&&mode!=='otp-signin'?<TextInput style={field} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} placeholder="Email address" placeholderTextColor={c.muted}/>:null}
     {mode==='signup'?<TextInput style={field} value={name} onChangeText={setName} placeholder="Full name" placeholderTextColor={c.muted}/>:null}
