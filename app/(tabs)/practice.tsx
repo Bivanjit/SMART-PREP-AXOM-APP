@@ -8,7 +8,7 @@ import {Heading,Copy,Panel,CardRow,SegmentedTabs,SubjectBadge,EmptyState} from '
 
 type SubjectRow={id:string;name:'Physics'|'Chemistry'|'Mathematics';chapters:number;questions:number};
 type Tab='chapter'|'pyq'|'mixed'|'custom';
-const subjectMeta={Physics:{icon:'atom-outline',tint:'#1D4ED8'},Chemistry:{icon:'flask-outline',tint:'#166534'},Mathematics:{icon:'calculator-outline',tint:'#92400E'}} as const;
+const subjectMeta={Physics:{icon:'atom-outline'},Chemistry:{icon:'flask-outline'},Mathematics:{icon:'calculator-outline'}} as const;
 export default function Practice(){
  const {c,language}=useTheme();
  const [tab,setTab]=useState<Tab>('chapter'),[rows,setRows]=useState<SubjectRow[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
@@ -29,15 +29,14 @@ export default function Practice(){
  const options=[{label:'By Chapter',value:'chapter' as const},{label:'PYQs',value:'pyq' as const},{label:'Mixed',value:'mixed' as const},{label:'Custom',value:'custom' as const}];
  const chooseTab=(value:Tab)=>{setTab(value);if(value==='pyq')router.push('/pyqs');if(value==='mixed')router.push({pathname:'/practice-builder',params:{type:'mixed'}});if(value==='custom')router.push({pathname:'/practice-builder',params:{type:'custom'}})};
  const subjectCards=rows.map(row=>{const meta=subjectMeta[row.name];return <Pressable key={row.id} onPress={()=>router.push({pathname:'/practice/[subject]',params:{subject:row.name,subjectId:row.id}})} style={({pressed})=>({backgroundColor:c.card,borderRadius:16,borderWidth:1,borderColor:c.border,padding:15,gap:12,opacity:pressed?.75:1})}>
-  <View style={{flexDirection:'row',alignItems:'center',gap:12}}><View style={{width:48,height:48,borderRadius:15,backgroundColor:row.name==='Physics'?c.physicsBg:row.name==='Chemistry'?c.chemistryBg:c.mathematicsBg,alignItems:'center',justifyContent:'center'}}><Ionicons name={meta.icon as any} size={24} color={meta.tint}/></View><View style={{flex:1,gap:4}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{row.name}</Text><Text style={{fontSize:11,color:c.textSecondary}}>{row.chapters} Chapters · {row.questions.toLocaleString('en-IN')} Questions</Text></View><Ionicons name="chevron-forward" size={19} color={c.textMuted}/></View>
+  <View style={{flexDirection:'row',alignItems:'center',gap:12}}><View style={{width:48,height:48,borderRadius:15,backgroundColor:row.name==='Physics'?c.physicsBg:row.name==='Chemistry'?c.chemistryBg:c.mathematicsBg,alignItems:'center',justifyContent:'center'}}><Ionicons name={meta.icon as any} size={24} color={row.name==='Physics'?c.physicsFg:row.name==='Chemistry'?c.chemistryFg:c.mathematicsFg}/></View><View style={{flex:1,gap:4}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{row.name}</Text><Text style={{fontSize:11,color:c.textSecondary}}>{row.chapters} Chapters · {row.questions.toLocaleString('en-IN')} Questions</Text></View><Ionicons name="chevron-forward" size={19} color={c.textMuted}/></View>
  </Pressable>});
  return <ScrollView style={{backgroundColor:c.bg}} contentContainerStyle={{padding:17,paddingTop:14,gap:16,paddingBottom:44}}>
   <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>STUDY WORKSPACE</Text><Heading>{'Practice'}</Heading><Copy>Build concepts and master questions with structured practice.</Copy></View>
   <SegmentedTabs options={options} value={tab} onChange={chooseTab}/>
   {tab==='chapter'?<><View style={{gap:4}}><Heading style={{fontSize:17}}>Choose a subject</Heading><Copy>Open a subject to explore its chapters and published question sets.</Copy></View>{loading?<ActivityIndicator color={c.green}/>:error?<EmptyState icon="cloud-offline-outline" title="Catalogue unavailable" description={error}/>:rows.length?subjectCards:<EmptyState icon="book-outline" title="No subjects available" description="Subjects will appear here once they are enabled in the admin console."/>}</>:null}
   <View style={{gap:10}}><Heading style={{fontSize:17}}>More Practice</Heading>
-   <CardRow icon="calendar-outline" title="Previous Year Questions" description="Assam CEE papers, filterable by year and subject" onPress={()=>router.push('/pyqs')}/>
-   <CardRow icon="filter-outline" title="Topic-wise PYQs" description="Narrow previous-year questions by chapter and topic" onPress={()=>router.push({pathname:'/pyqs',params:{mode:'topic'}})}/>
+   <CardRow icon="calendar-outline" title="Previous Year Questions" description="Free chapter-wise PYQs · choose an examination year" onPress={()=>router.push('/pyqs')}/>
    <CardRow icon="layers-outline" title="Mixed Practice" description="Curated question sets from multiple chapters" onPress={()=>router.push({pathname:'/practice-builder',params:{type:'mixed'}})}/>
    <CardRow icon="options-outline" title="Custom Practice" description="Build your own session by subject, chapter and difficulty" onPress={()=>router.push({pathname:'/practice-builder',params:{type:'custom'}})}/>
   </View>
