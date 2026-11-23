@@ -11,7 +11,7 @@ Notifications.setNotificationHandler({
 });
 function openNotification(response: Notifications.NotificationResponse) {
   const data = response.notification.request.content.data as Record<string, unknown>;
-  const route = typeof data?.route === 'string' ? data.route : '/(tabs)';
+  const route = typeof data?.route === 'string' ? data.route : typeof data?.action_path === 'string' ? data.action_path : '/(tabs)';
   if (route.startsWith('/') && !route.startsWith('//')) router.push(route as never);
   else router.push('/(tabs)');
 }
