@@ -3,19 +3,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main, v2-redesign, v3-unified-upgrade, v3-complete-redesign]
-    paths:
-      - 'app/**'
-      - 'components/**'
-      - 'assets/**'
-      - 'lib/**'
-      - 'supabase/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - 'app.json'
-      - 'eas.json'
-      - '.env'
-      - '.github/workflows/android-apk.yml'
 jobs:
   build-apk:
     runs-on: ubuntu-24.04
