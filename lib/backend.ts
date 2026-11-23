@@ -10,7 +10,7 @@ export async function loadChapterQuestions(chapterId:string,language:'en'|'as'='
 }
 export async function loadTestQuestions(testId:string){
  if(!supabase) throw new Error('Backend is not configured.');
- const {data,error}=await supabase.from('mock_test_questions').select('question_id,question_order,questions(id,chapter_id,prompt,options)').eq('mock_test_id',testId).order('question_order');
+ const {data,error}=await supabase.from('mock_test_questions').select('question_id,question_order,questions(id,chapter_id,prompt,options)').eq('mock_test_id',testId).eq('questions.is_published',true).order('question_order');
  if(error) throw error;
  return (data||[]).map((r:any)=>r.questions).filter(Boolean) as RemoteQuestion[];
 }
