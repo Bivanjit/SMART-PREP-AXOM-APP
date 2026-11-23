@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ScrollView,View,Text,Pressable,ActivityIndicator,Image,ImageBackground} from 'react-native';
+import {ScrollView,View,Text,Pressable,ActivityIndicator,Image,ImageBackground,useWindowDimensions} from 'react-native';
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
@@ -18,7 +18,7 @@ function SectionTitle({title,action,onPress}:{title:string;action?:string;onPres
  const {c}=useTheme();return <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Heading style={{fontSize:17}}>{title}</Heading>{action&&onPress?<Pressable onPress={onPress}><Text style={{fontSize:11,fontWeight:'800',color:c.green}}>{action}</Text></Pressable>:null}</View>;
 }
 export default function Home(){
- const {c,userEmail,userId,bookmarks,language}=useTheme();
+ const {c,userEmail,userId,bookmarks,language}=useTheme();const {width:windowWidth}=useWindowDimensions();
  const [data,setData]=useState<HomeData>({name:'Student',avatar:null,premium:false,attempts:0,publishedQuestions:0,attemptedQuestions:0,weeklyXp:0,unread:0,saved:bookmarks.length,latestLecture:null});
  const [loading,setLoading]=useState(true),[premiumDismissed,setPremiumDismissed]=useState(false);const [hero,setHero]=useState({title:'Assam CEE',year:'2027',description:'Complete preparation for Physics, Chemistry & Mathematics.',image:assamHero});
  useEffect(()=>{let live=true;void AsyncStorage.getItem('smartprep.premium.dismissed').then(v=>{if(live)setPremiumDismissed(v==='true')}).catch(()=>{});return()=>{live=false}},[]);
@@ -56,9 +56,8 @@ export default function Home(){
    <View style={{flex:1,gap:2}}><Text style={{fontSize:16,fontWeight:'900',color:c.text}}>Hi, {greeting}</Text><Text style={{fontSize:11,color:c.textSecondary}}>Ready for today's study session?</Text></View>
    <View style={{backgroundColor:data.premium?c.amber:c.surfaceElevated,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:10,fontWeight:'900',color:data.premium?'#FFFFFF':c.textSecondary}}>{data.premium?'Premium Member':'Free Plan'}</Text></View>
   </View>
-  <ImageBackground source={{uri:hero.image}} resizeMode="contain" imageStyle={{resizeMode:'contain',borderRadius:20}} style={{minHeight:184,borderRadius:20,overflow:'hidden',backgroundColor:'#1D4735'}}>
-   <View style={{flex:1,minHeight:184,padding:18,justifyContent:'space-between',backgroundColor:'rgba(8,28,27,.48)'}}>
-    <View style={{gap:8}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><Text style={{fontSize:21,fontWeight:'900',color:'#FFFFFF'}} >{hero.title}</Text><View style={{backgroundColor:'rgba(255,255,255,.92)',paddingHorizontal:9,paddingVertical:4,borderRadius:99}}><Text style={{fontSize:11,fontWeight:'900',color:'#173A31'}} >{hero.year}</Text></View></View><Text style={{fontSize:12,lineHeight:18,color:'#F4F8F4',maxWidth:270}}>{hero.description}</Text></View>
+  <ImageBackground source={{uri:hero.image}} resizeMode="contain" imageStyle={{resizeMode:'contain',borderRadius:20}} style={{width:'100%',height:Math.round((windowWidth-32)/3.32),borderRadius:20,overflow:'hidden',backgroundColor:'#1D4735'}}>
+   <View style={{flex:1,justifyContent:'flex-end',padding:12,backgroundColor:'transparent'}}>
     <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:14,paddingVertical:10,borderRadius:12,flexDirection:'row',alignItems:'center',gap:7,shadowColor:c.amber,shadowOpacity:.3,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:3}}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={15} color="#FFFFFF"/></Pressable>
    </View>
   </ImageBackground>
