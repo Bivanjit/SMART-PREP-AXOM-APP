@@ -1,0 +1,3 @@
+insert into public.product_plans(product_code,title,description,price_inr,compare_at_price_inr,duration_days,access_tier,is_active,display_order)
+values('chapter_practice','Chapter Practice Library','Unlock the chapter practice question library',149,null,365,'premium',true,2)
+on conflict(product_code) do update set title=excluded.title,description=excluded.description,price_inr=excluded.price_inr,duration_days=excluded.duration_days,access_tier=excluded.access_tier,is_active=excluded.is_active,updated_at=now();
