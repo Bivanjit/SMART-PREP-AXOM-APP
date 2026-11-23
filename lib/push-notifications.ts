@@ -51,7 +51,7 @@ export function initializePushNotifications() {
   void Notifications.getLastNotificationResponseAsync().then(response => { if (response) openNotification(response); }).catch(() => {});
   const { data } = supabase.auth.onAuthStateChange((event, session) => {
     const userId = session?.user?.id ?? null;
-    if (!userId) { tokenSubscription?.remove(); tokenSubscription = null; registeredUserId = null; return; }
+    if (!userId) { const previousUserId = registeredUserId; void unregisterDevicePushToken(previousUserId); return; }
     if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
       setTimeout(() => { void registerDevicePushToken(userId); }, 0);
     }
