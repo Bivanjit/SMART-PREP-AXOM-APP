@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useState} from 'react';
-import {ScrollView,View,Text,Pressable,ActivityIndicator,ImageBackground} from 'react-native';
+import {ScrollView,View,Text,Pressable,ActivityIndicator,ImageBackground,useWindowDimensions} from 'react-native';
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
@@ -10,7 +10,7 @@ type Batch={id:string;slug:string;title:string;subtitle:string|null;description:
 type Filter='all'|'free'|'premium';
 const assamHero='https://commons.wikimedia.org/wiki/Special:FilePath/A_Tea_Garden_of_Assam.jpg?width=1400';
 export default function Batches(){
- const {c,userId}=useTheme();const [rows,setRows]=useState<Batch[]>([]),[filter,setFilter]=useState<Filter>('all');
+ const {c,userId}=useTheme();const {width:windowWidth}=useWindowDimensions();const [rows,setRows]=useState<Batch[]>([]),[filter,setFilter]=useState<Filter>('all');
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[enrolling,setEnrolling]=useState<string|null>(null);
  useEffect(()=>{let live=true;void(async()=>{if(!supabase){setLoading(false);return;}try{
   const [{data:batches,error:bError},{data:enrollments},{data:progress},{data:memberships}]=await Promise.all([
@@ -35,8 +35,8 @@ export default function Batches(){
   <SegmentedTabs options={filters} value={filter} onChange={setFilter}/>
   {loading?<ActivityIndicator color={c.green} size="large"/>:error?<EmptyState icon="cloud-offline-outline" title="Batches unavailable" description={error}/>:null}
   {visible.length?visible.map(batch=>{const image=batch.cover_image_path?supabase?.storage.from('learning-assets').getPublicUrl(batch.cover_image_path).data.publicUrl:null;return <Panel key={batch.id} style={{padding:0,overflow:'hidden',gap:0}}>
-   <ImageBackground source={image?{uri:image}:{uri:assamHero}} resizeMode="contain" style={{height:116,borderTopLeftRadius:16,borderTopRightRadius:16,overflow:'hidden',backgroundColor:batch.access_tier==='free'?'#245A3C':'#32465A'}} imageStyle={{resizeMode:'contain',borderTopLeftRadius:16,borderTopRightRadius:16}}>
-    <View style={{flex:1,backgroundColor:'rgba(9,25,28,.28)',padding:13,alignItems:'flex-end',justifyContent:'flex-start'}}><View style={{backgroundColor:batch.access_tier==='free'?c.green:c.amber,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:9,fontWeight:'900',color:'#FFFFFF'}}>{batch.access_tier.toUpperCase()}</Text></View></View>
+   <ImageBackground source={image?{uri:image}:{uri:assamHero}} resizeMode="contain" style={{width:'100%',height:Math.round((windowWidth-34)/3.32),borderTopLeftRadius:16,borderTopRightRadius:16,overflow:'hidden',backgroundColor:batch.access_tier==='free'?'#245A3C':'#182B46'}} imageStyle={{resizeMode:'contain',borderTopLeftRadius:16,borderTopRightRadius:16}}>
+    <View style={{position:'absolute',top:12,right:12,backgroundColor:batch.access_tier==='free'?c.green:c.amber,paddingHorizontal:11,paddingVertical:7,borderRadius:99}}><Text style={{fontSize:9,fontWeight:'900',color:'#FFFFFF'}}>{batch.access_tier.toUpperCase()}</Text></View>
    </ImageBackground>
    <View style={{padding:15,gap:9}}>
     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{batch.title}</Text>
