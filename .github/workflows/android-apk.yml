@@ -10,6 +10,9 @@ on:
       - 'lib/**'
       - 'package.json'
       - 'app.json'
+      - 'tsconfig.json'
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
       - '.env'
       - '.github/workflows/android-apk.yml'
 jobs:
