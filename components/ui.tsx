@@ -16,7 +16,7 @@ export function Copy({children,style}:{children:React.ReactNode;style?:TextStyle
 }
 export function Panel({children,style}:{children:React.ReactNode;style?:ViewStyle}){
  const {c}=useTheme();
- return <View style={[{backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:designMetrics.radius.medium,padding:15,gap:10},style]}>{children}</View>;
+ return <View style={[{backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:18,padding:16,gap:11,shadowColor:'#0F172A',shadowOpacity:.035,shadowRadius:10,shadowOffset:{width:0,height:3},elevation:1},style]}>{children}</View>;
 }
 type ButtonVariant='primary'|'secondary'|'quiet'|'disabled';
 export function Button({title,onPress,variant='primary',icon,disabled=false,loading=false}:{title:string;onPress:()=>void;variant?:ButtonVariant;icon?:keyof typeof Ionicons.glyphMap;disabled?:boolean;loading?:boolean}){
@@ -27,7 +27,7 @@ export function Button({title,onPress,variant='primary',icon,disabled=false,load
  const quiet=variant==='quiet';
  const bg=unavailable?c.surfaceElevated:primary?c.accent:secondary?'transparent':'transparent';
  const fg=unavailable?c.textMuted:primary?'#FFFFFF':secondary?c.green:c.text;
- return <Pressable accessibilityRole="button" accessibilityState={{disabled:unavailable}} disabled={unavailable} onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:bg,borderWidth:secondary?1:0,borderColor:secondary?c.green:'transparent',borderRadius:12,paddingVertical:13,paddingHorizontal:16,minHeight:48,opacity:pressed?.78:1,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
+ return <Pressable accessibilityRole="button" accessibilityState={{disabled:unavailable}} disabled={unavailable} onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:bg,borderWidth:secondary?1:0,borderColor:secondary?c.green:'transparent',borderRadius:14,paddingVertical:14,paddingHorizontal:18,minHeight:50,opacity:pressed?.78:1,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
   {loading?<ActivityIndicator size="small" color={fg}/>:icon?<Ionicons name={icon} size={17} color={fg}/>:null}
   <Text style={{color:fg,fontWeight:'800',fontSize:13}}>{title}</Text>
  </Pressable>;
@@ -47,7 +47,7 @@ export function StatusBadge({status,count,compact=false}:{status:QuestionStatus;
 }
 export function SegmentedTabs<T extends string>({options,value,onChange}:{options:{label:string;value:T}[];value:T;onChange:(value:T)=>void}){
  const {c}=useTheme();
- return <View style={{flexDirection:'row',padding:4,borderRadius:13,backgroundColor:c.surfaceElevated,gap:3}}>{options.map(option=><Pressable key={option.value} accessibilityRole="tab" accessibilityState={{selected:value===option.value}} onPress={()=>onChange(option.value)} style={{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',paddingHorizontal:5,borderRadius:10,backgroundColor:value===option.value?c.green:'transparent'}}><Text numberOfLines={1} style={{fontSize:11,fontWeight:'800',color:value===option.value?'#FFFFFF':c.textSecondary}}>{option.label}</Text></Pressable>)}</View>;
+ return <View style={{flexDirection:'row',padding:4,borderRadius:14,backgroundColor:'#E9EEF4',gap:3}}>{options.map(option=><Pressable key={option.value} accessibilityRole="tab" accessibilityState={{selected:value===option.value}} onPress={()=>onChange(option.value)} style={{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',paddingHorizontal:5,borderRadius:10,backgroundColor:value===option.value?c.green:'#E9EEF4'}}><Text numberOfLines={1} style={{fontSize:11,fontWeight:'800',color:value===option.value?'#FFFFFF':c.textSecondary}}>{option.label}</Text></Pressable>)}</View>;
 }
 export function EmptyState({icon='file-tray-outline',title,description,action}:{icon?:keyof typeof Ionicons.glyphMap;title:string;description:string;action?:React.ReactNode}){
  const {c}=useTheme();
