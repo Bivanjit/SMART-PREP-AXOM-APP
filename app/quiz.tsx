@@ -4,11 +4,11 @@ import {router,useLocalSearchParams} from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import {useTheme} from './_layout';
 import {Heading,Copy,Panel,Button} from '../components/ui';
-import {loadChapterQuestions,loadTestQuestions,RemoteQuestion,submitServerAttempt} from '../lib/backend';
+import {loadChapterQuestions,loadTestQuestions,loadQuestionIds,RemoteQuestion,submitServerAttempt} from '../lib/backend';
 import {supabase} from '../lib/supabase';
 type Feedback={is_correct:boolean;correct_answer:string;explanation:string|null};
 export default function Quiz(){
- const p=useLocalSearchParams<{subject:string;chapter:string;chapterId:string;testId:string;testTitle:string;durationMinutes:string}>();
+ const p=useLocalSearchParams<{subject:string;chapter:string;chapterId:string;testId:string;testTitle:string;durationMinutes:string;questionIds:string}>();
  const {c,bookmarks,toggleBookmark,userId,language}=useTheme();
  const [list,setList]=useState<RemoteQuestion[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const [index,setIndex]=useState(0),[answers,setAnswers]=useState<Record<string,number>>({}),[review,setReview]=useState<string[]>([]),[visited,setVisited]=useState<number[]>([0]);
@@ -17,13 +17,13 @@ export default function Quiz(){
  const [startedAt,setStartedAt]=useState(new Date().toISOString()),[deadlineAt,setDeadlineAt]=useState<string|null>(null);
  const lock=useRef(false),title=p.testTitle||String(p.subject)+' · '+String(p.chapter);
  useEffect(()=>{let live=true;void(async()=>{try{
-  const qs=p.testId?await loadTestQuestions(p.testId):await loadChapterQuestions(p.chapterId,language);if(!live)return;setList(qs);
+  const selectedIds=p.questionIds?JSON.parse(String(p.questionIds)) as string[]:[];const qs=p.testId?await loadTestQuestions(p.testId):selectedIds.length?await loadQuestionIds(selectedIds,language):await loadChapterQuestions(p.chapterId,language);if(!live)return;setList(qs);
   if(p.testId&&supabase&&userId){const {data,error}=await supabase.from('attempt_drafts').select('answers,current_index,started_at,deadline_at').eq('user_id',userId).eq('test_id',p.testId).maybeSingle();if(error)throw error;
    if(data){setAnswers(data.answers||{});setIndex(Math.min(Number(data.current_index)||0,Math.max(0,qs.length-1)));setStartedAt(data.started_at);setDeadlineAt(data.deadline_at);}
    else{const start=new Date(),end=new Date(start.getTime()+Math.max(1,Number(p.durationMinutes)||180)*60000);setStartedAt(start.toISOString());setDeadlineAt(end.toISOString());}
   }else{setStartedAt(new Date().toISOString());setDeadlineAt(null);}
   if(live)setDraftReady(true);
- }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load questions.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[p.testId,p.chapterId,p.durationMinutes,userId,language]);
+ }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load questions.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[p.testId,p.chapterId,p.durationMinutes,p.questionIds,userId,language]);
  useEffect(()=>{if(!draftReady||!p.testId||!supabase||!userId)return;const t=setTimeout(()=>{void supabase!.from('attempt_drafts').upsert({user_id:userId,test_id:p.testId,answers,current_index:index,started_at:startedAt,deadline_at:deadlineAt,updated_at:new Date().toISOString()},{onConflict:'user_id,test_id'}).then(({error})=>{if(error)console.warn('Draft autosave failed:',error.message)})},500);return()=>clearTimeout(t)},[answers,index,draftReady,p.testId,userId,startedAt,deadlineAt]);
  async function chooseAnswer(question:RemoteQuestion,optionIndex:number){
   if(checking)return;const selected=String.fromCharCode(65+optionIndex);
