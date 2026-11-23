@@ -8,6 +8,7 @@ import {Heading,Copy,Panel,Button,SegmentedTabs,ProgressBar,EmptyState} from '..
 
 type Batch={id:string;slug:string;title:string;subtitle:string|null;description:string|null;access_tier:'free'|'premium';cover_image_path:string|null;subject_label:string|null;syllabus_summary:string|null;items:any[];enrolled:boolean;progress:number;};
 type Filter='all'|'free'|'premium';
+const assamHero='https://commons.wikimedia.org/wiki/Special:FilePath/A_Tea_Garden_of_Assam.jpg?width=1400';
 export default function Batches(){
  const {c,userId}=useTheme();const [rows,setRows]=useState<Batch[]>([]),[filter,setFilter]=useState<Filter>('all');
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[enrolling,setEnrolling]=useState<string|null>(null);
@@ -33,7 +34,7 @@ export default function Batches(){
   <SegmentedTabs options={filters} value={filter} onChange={setFilter}/>
   {loading?<ActivityIndicator color={c.green} size="large"/>:error?<EmptyState icon="cloud-offline-outline" title="Batches unavailable" description={error}/>:null}
   {visible.length?visible.map(batch=>{const image=batch.cover_image_path?supabase?.storage.from('learning-assets').getPublicUrl(batch.cover_image_path).data.publicUrl:null;return <Panel key={batch.id} style={{padding:0,overflow:'hidden',gap:0}}>
-   <ImageBackground source={image?{uri:image}:undefined} style={{height:116,backgroundColor:batch.access_tier==='free'?'#245A3C':'#32465A'}} imageStyle={{resizeMode:'cover'}}>
+   <ImageBackground source={image?{uri:image}:{uri:assamHero}} style={{height:116,backgroundColor:batch.access_tier==='free'?'#245A3C':'#32465A'}} imageStyle={{resizeMode:'cover'}}>
     <View style={{flex:1,backgroundColor:'rgba(9,25,28,.28)',padding:13,alignItems:'flex-end',justifyContent:'flex-start'}}><View style={{backgroundColor:batch.access_tier==='free'?c.green:c.amber,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:9,fontWeight:'900',color:'#FFFFFF'}}>{batch.access_tier.toUpperCase()}</Text></View></View>
    </ImageBackground>
    <View style={{padding:15,gap:9}}>
