@@ -34,10 +34,10 @@ export function Button({title,onPress,variant='primary',icon,disabled=false,load
  </Pressable>;
 }
 export function SubjectBadge({subject}:{subject:'Physics'|'Chemistry'|'Mathematics'}){
- const {c}=useTheme();
+ const {c,language}=useTheme();
  const style=subject==='Physics'?{bg:c.physicsBg,fg:c.physicsFg}:subject==='Chemistry'?{bg:c.chemistryBg,fg:c.chemistryFg}:{bg:c.mathematicsBg,fg:c.mathematicsFg};
  const icon=subject==='Physics'?'atom-outline':subject==='Chemistry'?'flask-outline':'calculator-outline';
- return <View style={{alignSelf:'flex-start',flexDirection:'row',alignItems:'center',gap:6,paddingHorizontal:10,paddingVertical:6,borderRadius:9,backgroundColor:style.bg}}><Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={14} color={style.fg}/><Text style={{fontSize:11,fontWeight:'800',color:style.fg}}>{subject}</Text></View>;
+ return <View style={{alignSelf:'flex-start',flexDirection:'row',alignItems:'center',gap:6,paddingHorizontal:10,paddingVertical:6,borderRadius:9,backgroundColor:style.bg}}><Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={14} color={style.fg}/><Text style={{fontSize:11,fontWeight:'800',color:style.fg}}>{tr(language,subject)}</Text></View>;
 }
 export type QuestionStatus='answered'|'not_answered'|'review'|'not_visited';
 export function StatusBadge({status,count,compact=false}:{status:QuestionStatus;count?:number;compact?:boolean}){
@@ -63,6 +63,6 @@ export function ProgressRing({value,size=76,stroke=7}:{value:number;size?:number
  return <View style={{width:size,height:size,alignItems:'center',justifyContent:'center'}}><Svg width={size} height={size} style={{position:'absolute'}}><Circle cx={size/2} cy={size/2} r={radius} stroke={c.surfaceElevated} strokeWidth={stroke} fill="none"/><Circle cx={size/2} cy={size/2} r={radius} stroke={c.green} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${circumference} ${circumference}`} strokeDashoffset={circumference*(1-safe/100)} fill="none" rotation="-90" origin={`${size/2}, ${size/2}`}/></Svg><Text style={{fontSize:size*.22,fontWeight:'900',color:c.text}}>{Math.round(safe)}%</Text></View>;
 }
 export function CardRow({icon,title,description,onPress,accent}:{icon:keyof typeof Ionicons.glyphMap;title:string;description:string;onPress:()=>void;accent?:string}){
- const {c}=useTheme();
- return <Pressable onPress={onPress} accessibilityRole="button" style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:12,padding:14,borderRadius:16,borderWidth:1,borderColor:c.border,backgroundColor:c.card,opacity:pressed?.9:1,transform:[{scale:pressed?.985:1}],shadowColor:'#0F172A',shadowOpacity:.045,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:1})}><View style={{width:42,height:42,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={21} color={accent||c.green}/></View><View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{title}</Text><Text style={{fontSize:11,color:c.textSecondary}}>{description}</Text></View><Ionicons name="chevron-forward" size={17} color={c.textMuted}/></Pressable>;
+ const {c,language}=useTheme();
+ return <Pressable onPress={onPress} accessibilityRole="button" style={({pressed})=>({flexDirection:'row',alignItems:'center',gap:12,padding:14,borderRadius:16,borderWidth:1,borderColor:c.border,backgroundColor:c.card,opacity:pressed?.9:1,transform:[{scale:pressed?.985:1}],shadowColor:'#0F172A',shadowOpacity:.045,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:1})}><View style={{width:42,height:42,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={21} color={accent||c.green}/></View><View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{tr(language,title)}</Text><Text style={{fontSize:11,color:c.textSecondary}}>{tr(language,description)}</Text></View><Ionicons name="chevron-forward" size={17} color={c.textMuted}/></Pressable>;
 }
