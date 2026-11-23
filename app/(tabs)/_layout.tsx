@@ -6,6 +6,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTheme} from '../_layout';
 import {tr} from '../../lib/i18n';
 import {supabase} from '../../lib/supabase';
+import BrandLogo from '../../components/BrandLogo';
 type Icon=keyof typeof Ionicons.glyphMap;
 export default function TabsLayout(){
  const {c,userEmail,userId,mode,setMode,language}=useTheme();const pathname=usePathname();const insets=useSafeAreaInsets();const {width:W}=useWindowDimensions();const [open,setOpen]=useState(false);const [profile,setProfile]=useState<{name:string;avatar:string|null;premium:boolean}>({name:'Student',avatar:null,premium:false});
@@ -27,7 +28,7 @@ export default function TabsLayout(){
    <Animated.View style={{position:'absolute',left:0,right:0,top:0,bottom:0,backgroundColor:'#000',opacity:backdrop.interpolate({inputRange:[0,1],outputRange:[0,.52]})}}/>
    <Animated.View style={{width:drawerWidth,height:'100%',backgroundColor:c.card,paddingTop:insets.top+12,paddingBottom:insets.bottom+12,paddingHorizontal:18,transform:[{translateX}],shadowColor:'#000',shadowOpacity:.2,shadowRadius:18,elevation:18}}>
     <View style={{flexDirection:'row',alignItems:'center',gap:12,paddingBottom:17,borderBottomWidth:1,borderBottomColor:c.border}}>
-     <View style={{width:46,height:46,borderRadius:13,backgroundColor:'#06163B',alignItems:'center',justifyContent:'center',overflow:'hidden'}}><Image source={require('../../assets/icon.png')} resizeMode="contain" style={{width:44,height:44,borderRadius:12}}/></View>
+     <BrandLogo size={46}/>
      <View style={{flex:1}}><Text style={{fontSize:15,fontWeight:'900',color:c.text}}>SmartPrep Axom</Text><Text style={{fontSize:10,color:c.textMuted}}>Prepare Smarter. Perform Better.</Text></View>
      <Pressable onPress={close} accessibilityLabel="Close navigation drawer"><Ionicons name="close" size={24} color={c.text}/></Pressable>
     </View>
