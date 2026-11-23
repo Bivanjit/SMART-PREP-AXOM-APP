@@ -75,9 +75,18 @@ Deno.serve(async (req: Request) => {
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
       }
       const { data: rows, error: rowsError } = await admin.from("pyq_paper_questions")
-        .select("question_id,marks,negative_marks,questions!inner(id,answer_key,explanation,is_published)")
+        .select("question_id,marks,negative_marks,questions!inner(id,answer_key,explanation,is_published,access_tier)")
         .eq("paper_id", pyqPaperId).order("question_order");
       if (rowsError || !rows?.length) return Response.json({ error: "This paper has no assigned questions yet." }, { status: 409, headers: cors });
+      if ((rows as any[]).some(row => row.questions?.access_tier === "premium") && !user) {
+        return Response.json({ error: "Sign in to access premium questions in this paper." }, { status: 401, headers: cors });
+      }
+      if ((rows as any[]).some(row => row.questions?.access_tier === "premium") && user) {
+        const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id)
+          .eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString())
+          .eq("product_code", "cee_complete").limit(1).maybeSingle();
+        if (!membership) return Response.json({ error: "Premium questions in this paper require CEE Complete." }, { status: 403, headers: cors });
+      }
       for (const row of rows as any[]) {
         if (!row.questions?.is_published) continue;
         rules.set(row.question_id, { answer_key: row.questions.answer_key, explanation: row.questions.explanation, marks: Number(row.marks), negative: Number(row.negative_marks) });
