@@ -18,6 +18,9 @@ on:
 jobs:
   build-apk:
     runs-on: ubuntu-24.04
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -89,10 +92,7 @@ jobs:
           generate_release_notes: true
           files: android/app/build/outputs/apk/release/app-release.apk
       - name: Publish release version to Supabase
-        if: success() && github.ref == 'refs/heads/v3-unified-upgrade' && secrets.SUPABASE_URL != '' && secrets.SUPABASE_SERVICE_ROLE_KEY != ''
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        if: success() && github.ref == 'refs/heads/v3-unified-upgrade' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         run: |
           curl --fail-with-body --silent --show-error \
             --request PATCH "${SUPABASE_URL}/rest/v1/app_release_settings?id=eq.1" \
@@ -102,5 +102,5 @@ jobs:
             --header "Prefer: return=minimal" \
             --data '{"version_name":"3.5.4","version_code":35400,"release_tag":"v3.5.4","is_available":true,"updated_at":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
       - name: Report missing Supabase release secrets
-        if: success() && github.ref == 'refs/heads/v3-unified-upgrade' && (secrets.SUPABASE_URL == '' || secrets.SUPABASE_SERVICE_ROLE_KEY == '')
+        if: success() && github.ref == 'refs/heads/v3-unified-upgrade' && (env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '')
         run: echo "::warning::GitHub Release was published, but Supabase auto-sync is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repository secrets to enable website release updates."
