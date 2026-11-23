@@ -16,13 +16,13 @@ export default function Quiz(){
  const [feedback,setFeedback]=useState<Record<string,Feedback>>({}),[checking,setChecking]=useState(false);
  const [seconds,setSeconds]=useState(0),[submitting,setSubmitting]=useState(false),[draftReady,setDraftReady]=useState(false);
  const [startedAt,setStartedAt]=useState(new Date().toISOString()),[deadlineAt,setDeadlineAt]=useState<string|null>(null);
- const lock=useRef(false),title=p.testTitle||String(p.subject)+' · '+String(p.chapter),isTestMode=Boolean(p.testId||p.customTest==='1');
+ const lock=useRef(false),title=p.testTitle||String(p.subject)+' · '+String(p.chapter),isTestMode=Boolean(p.testId||p.pyqPaperId||p.customTest==='1');
  useEffect(()=>{let live=true;void(async()=>{try{
   const selectedIds=p.questionIds?JSON.parse(String(p.questionIds)) as string[]:[];const qs=p.testId?await loadTestQuestions(p.testId):selectedIds.length?await loadQuestionIds(selectedIds,language):await loadChapterQuestions(p.chapterId,language);if(!live)return;setList(qs);
   if(p.testId&&supabase&&userId){const {data,error}=await supabase.from('attempt_drafts').select('answers,current_index,started_at,deadline_at').eq('user_id',userId).eq('test_id',p.testId).maybeSingle();if(error)throw error;
    if(data){setAnswers(data.answers||{});setIndex(Math.min(Number(data.current_index)||0,Math.max(0,qs.length-1)));setStartedAt(data.started_at);setDeadlineAt(data.deadline_at);}
    else{const start=new Date(),end=new Date(start.getTime()+Math.max(1,Number(p.durationMinutes)||180)*60000);setStartedAt(start.toISOString());setDeadlineAt(end.toISOString());}
-  }else{const start=new Date();setStartedAt(start.toISOString());setDeadlineAt(p.customTest==='1'?new Date(start.getTime()+Math.max(1,Number(p.durationMinutes)||60)*60000).toISOString():null);}
+  }else{const start=new Date();setStartedAt(start.toISOString());setDeadlineAt(p.customTest==='1'||p.pyqPaperId?new Date(start.getTime()+Math.max(1,Number(p.durationMinutes)||(p.pyqPaperId?180:60))*60000).toISOString():null);}
   if(live)setDraftReady(true);
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load questions.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[p.testId,p.chapterId,p.durationMinutes,p.questionIds,p.customTest,userId,language]);
  useEffect(()=>{if(!draftReady||!p.testId||!supabase||!userId)return;const t=setTimeout(()=>{void supabase!.from('attempt_drafts').upsert({user_id:userId,test_id:p.testId,answers,current_index:index,started_at:startedAt,deadline_at:deadlineAt,updated_at:new Date().toISOString()},{onConflict:'user_id,test_id'}).then(({error})=>{if(error)console.warn('Draft autosave failed:',error.message)})},500);return()=>clearTimeout(t)},[answers,index,draftReady,p.testId,userId,startedAt,deadlineAt]);
