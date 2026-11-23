@@ -6,7 +6,6 @@ import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
 import {Copy,Heading,Panel,Button,ProgressRing,ProgressBar} from '../../components/ui';
-import BrandLogo from '../../components/BrandLogo';
 
 const assamHero='https://commons.wikimedia.org/wiki/Special:FilePath/A_Tea_Garden_of_Assam.jpg?width=1400';
 type HomeData={name:string;avatar:string|null;premium:boolean;attempts:number;publishedQuestions:number;attemptedQuestions:number;weeklyXp:number;unread:number;saved:number;latestLecture:{id:string;title:string;subject:string}|null;};
