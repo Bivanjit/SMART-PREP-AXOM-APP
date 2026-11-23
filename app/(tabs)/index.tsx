@@ -67,7 +67,7 @@ export default function Home(){
   <ImageBackground source={{uri:hero.image}} imageStyle={{borderRadius:20}} style={{minHeight:184,borderRadius:20,overflow:'hidden',backgroundColor:'#1D4735'}}>
    <View style={{flex:1,minHeight:184,padding:18,justifyContent:'space-between',backgroundColor:'rgba(8,28,27,.48)'}}>
     <View style={{gap:8}}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><Text style={{fontSize:21,fontWeight:'900',color:'#FFFFFF'}} >{hero.title}</Text><View style={{backgroundColor:'rgba(255,255,255,.92)',paddingHorizontal:9,paddingVertical:4,borderRadius:99}}><Text style={{fontSize:11,fontWeight:'900',color:'#173A31'}} >{hero.year}</Text></View></View><Text style={{fontSize:12,lineHeight:18,color:'#F4F8F4',maxWidth:270}}>{hero.description}</Text></View>
-    <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:14,paddingVertical:10,borderRadius:11,flexDirection:'row',alignItems:'center',gap:7}}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={15} color="#FFFFFF"/></Pressable>
+    <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:14,paddingVertical:10,borderRadius:12,flexDirection:'row',alignItems:'center',gap:7,shadowColor:c.amber,shadowOpacity:.3,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:3}}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={15} color="#FFFFFF"/></Pressable>
    </View>
   </ImageBackground>
   <View style={{flexDirection:'row',gap:8}}>
@@ -76,7 +76,7 @@ export default function Home(){
    <QuickAction icon="layers-outline" title="PYQs" onPress={()=>router.push('/pyqs')}/>
    <QuickAction icon="play-outline" title="Lectures" onPress={()=>router.push('/(tabs)/lectures')}/>
   </View>
-  {!data.premium&&!premiumDismissed?<Pressable onPress={()=>router.push('/premium')} style={{backgroundColor:c.surfaceElevated,borderWidth:1,borderColor:c.border,borderRadius:16,padding:14,flexDirection:'row',alignItems:'center',gap:12}}>
+  {!data.premium&&!premiumDismissed?<Pressable onPress={()=>router.push('/premium')} style={{backgroundColor:c.surfaceElevated,borderWidth:1,borderColor:'#E9C77D',borderRadius:17,padding:14,flexDirection:'row',alignItems:'center',gap:12,shadowColor:c.amber,shadowOpacity:.2,shadowRadius:12,shadowOffset:{width:0,height:4},elevation:4}}>
    <View style={{width:42,height:42,borderRadius:14,backgroundColor:'#FDE8B4',alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy" size={22} color="#A16207"/></View>
    <View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Upgrade to Premium</Text><Text style={{fontSize:11,color:c.textSecondary}}>Unlock full courses, PYQs, mock tests & more.</Text></View>
    <View style={{width:32,height:32,borderRadius:16,backgroundColor:c.amber,alignItems:'center',justifyContent:'center'}}><Ionicons name="arrow-forward" size={17} color="#FFFFFF"/></View>
