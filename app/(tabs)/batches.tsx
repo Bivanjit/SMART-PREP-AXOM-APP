@@ -25,7 +25,7 @@ export default function Batches(){
   if(live)setRows(mapped);
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load batches.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[userId]);
  const visible=useMemo(()=>rows.filter(b=>filter==='all'||b.access_tier===filter),[rows,filter]);
- async function enroll(batch:Batch){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'){const {data:member}=await supabase!.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!member){router.push('/payment');return;}}
+ async function enroll(batch:Batch){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'){const {data:member}=await supabase!.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!member){router.push('/premium');return;}}
   setEnrolling(batch.id);const {error}=await supabase!.from('batch_enrollments').insert({batch_id:batch.id,user_id:userId});setEnrolling(null);if(error&&error.code!=='23505'){setError(error.message);return;}setRows(old=>old.map(x=>x.id===batch.id?{...x,enrolled:true}:x));router.push({pathname:'/batch/[id]',params:{id:batch.id}});
  }
  const filters=[{label:'All Batches',value:'all' as const},{label:'Free',value:'free' as const},{label:'Premium',value:'premium' as const}];
