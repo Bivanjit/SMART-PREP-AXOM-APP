@@ -11,7 +11,7 @@ export default function PYQs(){
  const {c,language}=useTheme();
  const [rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[year,setYear]=useState('all');
  useEffect(()=>{let live=true;void(async()=>{if(!supabase){setLoading(false);setError('Backend is not configured.');return;}try{
-  let {data,error}=await supabase.from('questions').select('id,chapter_id,source_year,prompt,chapters(name,subjects(name))').eq('is_published',true).eq('source_type','pyq').order('source_year',{ascending:false}).limit(2000);
+  let {data,error}=await supabase.from('questions').select('id,chapter_id,source_year,prompt,chapters(name,subjects(name))') .eq('is_published',true).eq('source_type','pyq').eq('language',language).order('source_year',{ascending:false}).limit(2000);
   if(error)throw error;
   if(language==='as'&&(data||[]).length===0){const fallback=await supabase.from('questions').select('id,chapter_id,source_year,prompt,chapters(name,subjects(name))').eq('is_published',true).eq('source_type','pyq').eq('language','en').order('source_year',{ascending:false}).limit(2000);if(fallback.error)throw fallback.error;data=fallback.data;}
   if(live)setRows((data||[]) as any);
