@@ -9,7 +9,7 @@ import {Heading,Copy,Panel,SegmentedTabs,EmptyState,Button,SubjectBadge} from '.
 type QuestionRow={id:string;chapter_id:string;prompt:string;difficulty:string;source_year:number|null;source_exam:string|null;chapters?:{name:string;subjects?:{name:string}}};
 type Paper={id:string;title:string;exam_year:number;description:string|null;duration_minutes:number;total_marks:number;access_tier:string};
 export default function PYQs(){
- const {c,language}=useTheme();const params=useLocalSearchParams<{mode?:string}>();
+ const {c,language,userId}=useTheme();const params=useLocalSearchParams<{mode?:string}>();
  const [rows,setRows]=useState<QuestionRow[]>([]),[papers,setPapers]=useState<Paper[]>([]),[chapters,setChapters]=useState<any[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState('');
  const [year,setYear]=useState('all'),[subject,setSubject]=useState('All'),[difficulty,setDifficulty]=useState('all'),[chapter,setChapter]=useState('all'),[search,setSearch]=useState('');
@@ -25,8 +25,8 @@ export default function PYQs(){
  const years=useMemo(()=>Array.from(new Set(rows.map(x=>x.source_year).filter(Boolean))).sort((a,b)=>Number(b)-Number(a)).map(String),[rows]);
  const filtered=useMemo(()=>rows.filter(q=>(year==='all'||String(q.source_year)===year)&&(subject==='All'||q.chapters?.subjects?.name===subject)&&(chapter==='all'||q.chapter_id===chapter)&&(difficulty==='all'||q.difficulty===difficulty)&&(!search||q.prompt.toLowerCase().includes(search.toLowerCase()))),[rows,year,subject,chapter,difficulty,search]);
  const subjectOptions=[{label:'All',value:'All'},{label:'Physics',value:'Physics'},{label:'Chemistry',value:'Chemistry'},{label:'Mathematics',value:'Mathematics'}];
- const startIds=(ids:string[],title:string)=>{if(!ids.length)return;router.push({pathname:'/quiz',params:{questionIds:JSON.stringify(ids),testTitle:title}})};
- async function startPaper(p:Paper){if(!supabase)return;const {data,error}=await supabase.from('pyq_paper_questions').select('question_id').eq('paper_id',p.id).order('question_order');if(error){setError(error.message);return;}startIds((data||[]).map(x=>x.question_id),p.title);}
+ const startIds=(ids:string[],title:string)=>{if(!ids.length)return;router.push({pathname:'/quiz',params:{questionIds:JSON.stringify(ids),testTitle:title,pyqPaperId:p.id}})};
+ async function startPaper(p:Paper){if(!supabase)return;if(p.access_tier==='premium'){if(!userId){router.push('/auth');return;}const {data:member}=await supabase.from('memberships').select('id').eq('user_id',userId).eq('product_code','cee_complete').eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!member){router.push('/premium');return;}}const {data,error}=await supabase.from('pyq_paper_questions').select('question_id').eq('paper_id',p.id).order('question_order');if(error){setError(error.message);return;}startIds((data||[]).map(x=>x.question_id),p.title);}
  return <ScrollView style={{backgroundColor:c.bg}} contentContainerStyle={{padding:17,paddingTop:12,gap:15,paddingBottom:42}}>
   <View style={{gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.2,color:c.green}}>ASSAM CEE · PREVIOUS YEAR QUESTIONS</Text><Heading>PYQ Archive</Heading><Copy>Explore verified previous-year questions and papers. Only content published by the admin appears here.</Copy></View>
   {loading?<ActivityIndicator color={c.green} size="large"/>:error?<EmptyState icon="cloud-offline-outline" title="Could not load the archive" description={error}/>:null}
