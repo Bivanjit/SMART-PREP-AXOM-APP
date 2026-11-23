@@ -4,7 +4,7 @@ import {router,useLocalSearchParams} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
-import {Heading,Copy,Panel,Button,EmptyState,SubjectBadge} from '../../components/ui';
+import {Heading,Copy,Panel,Button,EmptyState} from '../../components/ui';
 type Chapter={id:string;name:string;slug:string;display_order:number;questionCount:number;topicCount:number};
 type SubjectName='Physics'|'Chemistry'|'Mathematics';
 const validSubjects:SubjectName[]=['Physics','Chemistry','Mathematics'];
