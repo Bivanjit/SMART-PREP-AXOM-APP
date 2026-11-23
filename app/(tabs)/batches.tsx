@@ -35,7 +35,7 @@ export default function Batches(){
   <SegmentedTabs options={filters} value={filter} onChange={setFilter}/>
   {loading?<ActivityIndicator color={c.green} size="large"/>:error?<EmptyState icon="cloud-offline-outline" title="Batches unavailable" description={error}/>:null}
   {visible.length?visible.map(batch=>{const image=batch.cover_image_path?supabase?.storage.from('learning-assets').getPublicUrl(batch.cover_image_path).data.publicUrl:null;return <Panel key={batch.id} style={{padding:0,overflow:'hidden',gap:0}}>
-   <ImageBackground source={image?{uri:image}:{uri:assamHero}} style={{height:116,backgroundColor:batch.access_tier==='free'?'#245A3C':'#32465A'}} imageStyle={{resizeMode:'cover'}}>
+   <ImageBackground source={image?{uri:image}:{uri:assamHero}} resizeMode="contain" style={{height:116,borderTopLeftRadius:16,borderTopRightRadius:16,overflow:'hidden',backgroundColor:batch.access_tier==='free'?'#245A3C':'#32465A'}} imageStyle={{resizeMode:'contain',borderTopLeftRadius:16,borderTopRightRadius:16}}>
     <View style={{flex:1,backgroundColor:'rgba(9,25,28,.28)',padding:13,alignItems:'flex-end',justifyContent:'flex-start'}}><View style={{backgroundColor:batch.access_tier==='free'?c.green:c.amber,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:9,fontWeight:'900',color:'#FFFFFF'}}>{batch.access_tier.toUpperCase()}</Text></View></View>
    </ImageBackground>
    <View style={{padding:15,gap:9}}>
