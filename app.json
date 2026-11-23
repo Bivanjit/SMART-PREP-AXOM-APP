@@ -3,7 +3,7 @@
     "name": "SmartPrep Axom",
     "slug": "smartprep-axom",
     "scheme": "smartprepaxom",
-    "version": "2.2.1",
+    "version": "3.5.4",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -24,7 +24,7 @@
       "permissions": [
         "android.permission.POST_NOTIFICATIONS"
       ],
-      "versionCode": 2201
+      "versionCode": 35400
     },
     "plugins": [
       "expo-router",

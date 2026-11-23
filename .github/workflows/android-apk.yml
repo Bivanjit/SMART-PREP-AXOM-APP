@@ -1,4 +1,4 @@
-name: Build SmartPrep Axom Android Release APK (GitHub Actions + Gradle)
+name: Build SmartPrep Axom v3.5.4 Android Release APK (GitHub Actions + Gradle)
 on:
   workflow_dispatch:
   push:
@@ -73,7 +73,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: smartprep-axom-v2.3-v2.5-release
+          name: smartprep-axom-v3.5.4-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
