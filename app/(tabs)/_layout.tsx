@@ -47,7 +47,7 @@ export default function TabsLayout(){
      {item('trophy-outline','Leaderboard & Leagues','/leaderboard')}
      <Text style={{fontSize:11,fontWeight:'800',letterSpacing:1,color:c.textMuted,marginTop:22,marginBottom:5}}>ACCOUNT & MORE</Text>
      {item('person-circle-outline','Profile & Account','/(tabs)/profile')}
-     {item('ribbon-outline','Membership & Plans','/payment')}
+     {item('ribbon-outline','Membership & Plans','/premium')}
      {item('bookmark-outline','Saved Questions','/saved')}
      {item('alert-circle-outline','Mistake Notebook','/mistakes')}
      {item('receipt-outline','Payment History','/payment-history')}
