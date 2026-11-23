@@ -3,7 +3,7 @@
     "name": "SmartPrep Axom",
     "slug": "smartprep-axom",
     "scheme": "smartprepaxom",
-    "version": "3.5.0",
+    "version": "3.5.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -16,16 +16,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#06163B"
-      }
+      },
+      "versionCode": 35100
     },
     "plugins": [
       "expo-router",
-      ["expo-splash-screen", {
-        "image": "./assets/icon.png",
-        "imageWidth": 150,
-        "resizeMode": "contain",
-        "backgroundColor": "#06163B"
-      }],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icon.png",
+          "imageWidth": 150,
+          "resizeMode": "contain",
+          "backgroundColor": "#06163B"
+        }
+      ],
       "expo-notifications"
     ],
     "icon": "./assets/icon.png"
