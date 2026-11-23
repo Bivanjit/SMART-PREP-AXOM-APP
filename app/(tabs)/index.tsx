@@ -60,7 +60,7 @@ export default function Home(){
   </View>
   <View style={{flexDirection:'row',alignItems:'center',gap:10}}>
    {data.avatar?<Image source={{uri:data.avatar}} style={{width:42,height:42,borderRadius:21}}/>:<View style={{width:42,height:42,borderRadius:21,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="person" size={20} color={c.primary}/></View>}
-   <View style={{flex:1,gap:2}}><Text style={{fontSize:16,fontWeight:'900',color:c.text}}>Hi, {greeting} 👋</Text><Text style={{fontSize:11,color:c.textSecondary}}>Ready for today's study session?</Text></View>
+   <View style={{flex:1,gap:2}}><Text style={{fontSize:16,fontWeight:'900',color:c.text}}>Hi, {greeting}</Text><Text style={{fontSize:11,color:c.textSecondary}}>Ready for today's study session?</Text></View>
    <View style={{backgroundColor:data.premium?c.amber:c.surfaceElevated,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:10,fontWeight:'900',color:data.premium?'#FFFFFF':c.textSecondary}}>{data.premium?'Premium Member':'Free Plan'}</Text></View>
   </View>
   <ImageBackground source={{uri:hero.image}} imageStyle={{borderRadius:20}} style={{minHeight:184,borderRadius:20,overflow:'hidden',backgroundColor:'#1D4735'}}>
@@ -76,7 +76,7 @@ export default function Home(){
    <QuickAction icon="play-outline" title="Lectures" onPress={()=>router.push('/(tabs)/lectures')}/>
   </View>
   {!data.premium&&!premiumDismissed?<Pressable onPress={()=>router.push('/premium')} style={{backgroundColor:c.surfaceElevated,borderWidth:1,borderColor:'#E9C77D',borderRadius:17,padding:14,flexDirection:'row',alignItems:'center',gap:12,shadowColor:c.amber,shadowOpacity:.2,shadowRadius:12,shadowOffset:{width:0,height:4},elevation:4}}>
-   <View style={{width:42,height:42,borderRadius:14,backgroundColor:'#FDE8B4',alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy" size={22} color="#A16207"/></View>
+   <View style={{width:42,height:42,borderRadius:14,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy" size={22} color="#A16207"/></View>
    <View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Upgrade to Premium</Text><Text style={{fontSize:11,color:c.textSecondary}}>Unlock full courses, PYQs, mock tests & more.</Text></View>
    <View style={{width:32,height:32,borderRadius:16,backgroundColor:c.amber,alignItems:'center',justifyContent:'center'}}><Ionicons name="arrow-forward" size={17} color="#FFFFFF"/></View>
    <Pressable onPress={e=>{e.stopPropagation();dismissPremium()}} accessibilityLabel="Dismiss premium offer" style={{position:'absolute',right:5,top:4,padding:3}}><Ionicons name="close" size={13} color={c.textMuted}/></Pressable>
