@@ -3,7 +3,7 @@
     "name": "SmartPrep Axom",
     "slug": "smartprep-axom",
     "scheme": "smartprepaxom",
-    "version": "3.0.0",
+    "version": "3.5.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
