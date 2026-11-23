@@ -47,7 +47,7 @@ export function StatusBadge({status,count,compact=false}:{status:QuestionStatus;
 }
 export function SegmentedTabs<T extends string>({options,value,onChange}:{options:{label:string;value:T}[];value:T;onChange:(value:T)=>void}){
  const {c}=useTheme();
- return <View style={{flexDirection:'row',padding:4,borderRadius:14,backgroundColor:'#E9EEF4',gap:3}}>{options.map(option=><Pressable key={option.value} accessibilityRole="tab" accessibilityState={{selected:value===option.value}} onPress={()=>onChange(option.value)} style={{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',paddingHorizontal:5,borderRadius:10,backgroundColor:value===option.value?c.green:'#E9EEF4'}}><Text numberOfLines={1} style={{fontSize:11,fontWeight:'800',color:value===option.value?'#FFFFFF':c.textSecondary}}>{option.label}</Text></Pressable>)}</View>;
+ return <View style={{flexDirection:'row',padding:4,borderRadius:14,backgroundColor:c.surfaceElevated,gap:3}}>{options.map(option=><Pressable key={option.value} accessibilityRole="tab" accessibilityState={{selected:value===option.value}} onPress={()=>onChange(option.value)} style={{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',paddingHorizontal:5,borderRadius:10,backgroundColor:value===option.value?c.green:c.surfaceElevated}}><Text numberOfLines={1} style={{fontSize:11,fontWeight:'800',color:value===option.value?'#FFFFFF':c.textSecondary}}>{option.label}</Text></Pressable>)}</View>;
 }
 export function EmptyState({icon='file-tray-outline',title,description,action}:{icon?:keyof typeof Ionicons.glyphMap;title:string;description:string;action?:React.ReactNode}){
  const {c}=useTheme();
