@@ -61,7 +61,7 @@ export const designTokens = {
   },
 } as const;
 
-export type ThemeColors = typeof designTokens.light;
+export type ThemeColors = typeof designTokens[keyof typeof designTokens];
 
 export const designMetrics = {
   radius: { small: 10, medium: 16, large: 22, modal: 24 },
