@@ -5,7 +5,7 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [main, v2-redesign, v3-unified-upgrade, v3-complete-redesign]
+    branches: [release/v3.5.4-fcm-notifications]
 permissions:
   contents: write
 jobs:
@@ -66,7 +66,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
       - name: Publish permanent GitHub Release
-        if: github.ref == 'refs/heads/v3-complete-redesign'
+        if: github.ref == 'refs/heads/release/v3.5.4-fcm-notifications'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
