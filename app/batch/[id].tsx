@@ -23,7 +23,7 @@ export default function BatchDetail(){
   setBusy(true);const {error}=await supabase!.from('batch_enrollments').insert({batch_id:batch.id,user_id:userId});setBusy(false);if(error&&error.code!=='23505'){setError(error.message);return;}setEnrolled(true);
  }
  async function openItem(item:any){if(!enrolled){await enroll();if(!userId||busy)return;}
-  if(item.item_type==='chapter'){router.push({pathname:'/chapter-sheets/[id]',params:{id:item.chapter_id,subject:item.chapters?.subjects?.name||'',chapter:item.chapters?.name||item.title}});return;}
+  if(item.item_type==='chapter'){router.push({pathname:'/chapter-sheets/[id]',params:{id:item.chapter_id,subject:item.chapters?.subjects?.name||'',chapter:item.chapters?.name||item.title,batchItemId:item.id}});return;}
   if(item.item_type==='lecture'){const l=item.lectures;if(!l?.video_url){setError('This lecture is missing its video URL.');return;}router.push({pathname:'/lecture-player',params:{lectureId:l.id,url:l.video_url,title:l.title,batchItemId:item.id}});return;}
   if(item.item_type==='practice_set'){const {data:q,error}=await supabase!.from('practice_set_questions').select('question_id').eq('practice_set_id',item.practice_set_id).order('question_order');if(error){setError(error.message);return;}const ids=(q||[]).map(x=>x.question_id);if(!ids.length){setError('This practice set has no questions yet.');return;}router.push({pathname:'/quiz',params:{questionIds:JSON.stringify(ids),testTitle:item.title,batchItemId:item.id}});return;}
   if(item.item_type==='mock_test'){router.push({pathname:'/quiz',params:{testId:item.mock_test_id,testTitle:item.title,batchItemId:item.id}});return;}
