@@ -13,7 +13,7 @@ export default function Quiz(){
  const p=useLocalSearchParams<{subject:string;chapter:string;chapterId:string;testId:string;pyqPaperId:string;testTitle:string;durationMinutes:string;questionIds:string;customTest:string;batchItemId:string}>();
  const {c,bookmarks,toggleBookmark,userId,language}=useTheme();
  const [list,setList]=useState<RemoteQuestion[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('');
- const [index,setIndex]=useState(0),[answers,setAnswers]=useState<Record<string,number>>({}),[review,setReview]=useState<string[]>([]),[visited,setVisited]=useState<number[]>([0]);
+ const [index,setIndex]=useState(0),[answers,setAnswers]=useState<Record<string,number>>({}),[visited,setVisited]=useState<number[]>([0]);
  const [feedback,setFeedback]=useState<Record<string,Feedback>>({}),[checking,setChecking]=useState(false);
  const [seconds,setSeconds]=useState(0),[submitting,setSubmitting]=useState(false),[draftReady,setDraftReady]=useState(false);
  const [startedAt,setStartedAt]=useState(new Date().toISOString()),[deadlineAt,setDeadlineAt]=useState<string|null>(null);
@@ -60,6 +60,5 @@ export default function Quiz(){
  {index>0?<Button title="Previous" variant="secondary" onPress={()=>setIndex(i=>Math.max(0,i-1))}/>:null}
  <Button title={index===list.length-1?'Finish':'Next'} onPress={()=>index===list.length-1?Alert.alert('Finish session?','Your answers will be scored by the server.',[{text:'Cancel',style:'cancel'},{text:'Submit',onPress:()=>void submit()}]):setIndex(i=>Math.min(list.length-1,i+1))}/>
  <Panel><Heading style={{fontSize:15}}>Question Palette</Heading><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{list.map((item,i)=>{const status:QuestionStatus=answers[item.id]!==undefined?'answered':visited.includes(i)?'not_answered':'not_visited';const color=status==='answered'?c.success:status==='not_answered'?c.error:c.unvisited;const icon=status==='answered'?'checkmark':status==='not_answered'?'square-outline':'remove';return <Pressable key={item.id} onPress={()=>setIndex(i)} accessibilityLabel={'Question '+(i+1)+' '+status} style={{width:'17%',aspectRatio:1,borderRadius:9,alignItems:'center',justifyContent:'center',backgroundColor:color,borderWidth:index===i?2:1,borderColor:index===i?c.text:c.border,gap:1}}><Text style={{color:'#FFFFFF',fontWeight:'900',fontSize:12}}>{i+1}</Text><Ionicons name={icon as any} size={9} color="#FFFFFF"/></Pressable>})}</View><View style={{gap:9,marginTop:7}}><StatusBadge status="answered" count={counts.answered}/><StatusBadge status="not_answered" count={counts.not_answered}/><StatusBadge status="not_visited" count={counts.not_visited}/></View></Panel>
- <Button title={submitting?'Submitting…':isTestMode?'Submit Test':'Submit Practice'} onPress={()=>Alert.alert('Submit session?','The server will calculate your marks.',[{text:'Continue test',style:'cancel'},{text:'Submit now',style:'destructive',onPress:()=>void submit()}])}/>
  </ScrollView>
 }
