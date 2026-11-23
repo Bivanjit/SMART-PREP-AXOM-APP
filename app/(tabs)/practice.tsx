@@ -8,7 +8,7 @@ import {Heading,Copy,Panel} from '../../components/ui';
 import {tr} from '../../lib/i18n';
 
 const meta:Record<string,{icon:keyof typeof Ionicons.glyphMap;bg:string;iconColor:string;tag:string}>={
- Physics:{icon:'atom-outline',bg:'#DBEAFE',iconColor:'#1D4ED8',tag:'Concepts, laws and numericals'},
+ Physics:{icon:'flash-outline',bg:'#DBEAFE',iconColor:'#1D4ED8',tag:'Concepts, laws and numericals'},
  Chemistry:{icon:'flask-outline',bg:'#DCFCE7',iconColor:'#166534',tag:'Reactions and core concepts'},
  Mathematics:{icon:'calculator-outline',bg:'#FEF3C7',iconColor:'#92400E',tag:'Problem solving and accuracy'}
 };
