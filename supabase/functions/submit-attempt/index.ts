@@ -78,10 +78,10 @@ Deno.serve(async (req: Request) => {
         .select("question_id,marks,negative_marks,questions!inner(id,answer_key,explanation,is_published,access_tier,source_type)")
         .eq("paper_id", pyqPaperId).order("question_order");
       if (rowsError || !rows?.length) return Response.json({ error: "This paper has no assigned questions yet." }, { status: 409, headers: cors });
-      if ((rows as any[]).some(row => row.questions?.source_type !== "pyq" && row.questions?.access_tier === "premium") && !user) {
+      if (paper.access_tier !== "free" && (rows as any[]).some(row => row.questions?.source_type !== "pyq" && row.questions?.access_tier === "premium") && !user) {
         return Response.json({ error: "Sign in to access premium questions in this paper." }, { status: 401, headers: cors });
       }
-      if ((rows as any[]).some(row => row.questions?.source_type !== "pyq" && row.questions?.access_tier === "premium") && user) {
+      if (paper.access_tier !== "free" && (rows as any[]).some(row => row.questions?.source_type !== "pyq" && row.questions?.access_tier === "premium") && user) {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id)
           .eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString())
           .eq("product_code", "cee_complete").limit(1).maybeSingle();
@@ -101,7 +101,10 @@ Deno.serve(async (req: Request) => {
       const { data: chapterRows, error: chapterError } = await admin.from("chapters").select("id,access_tier").in("id", chapterIds);
       if (chapterError) throw chapterError;
       const premiumChapters = new Set((chapterRows || []).filter((c: any) => c.access_tier === "premium").map((c: any) => c.id));
-      const needsChapterMembership = questions.some(q => q.source_type !== "pyq" && (q.access_tier === "premium" || premiumChapters.has(q.chapter_id)));
+      const { data: freePyqLinks, error: pyqLinkError } = await admin.from("pyq_paper_questions").select("question_id,pyq_papers!inner(access_tier,status)").in("question_id", ids).eq("pyq_papers.status", "published").eq("pyq_papers.access_tier", "free");
+      if (pyqLinkError) throw pyqLinkError;
+      const freePyqIds = new Set((freePyqLinks || []).map((x: any) => x.question_id));
+      const needsChapterMembership = questions.some(q => !freePyqIds.has(q.id) && q.source_type !== "pyq" && (q.access_tier === "premium" || premiumChapters.has(q.chapter_id)));
       if (needsChapterMembership) {
         if (!user) return Response.json({ error: "Sign in to submit premium chapter practice." }, { status: 401, headers: cors });
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["chapter_practice","cee_complete"]).limit(1).maybeSingle();
