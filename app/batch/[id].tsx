@@ -19,7 +19,7 @@ export default function BatchDetail(){
  useEffect(()=>{let live=true;void load().catch(e=>{if(live)setError(e instanceof Error?e.message:'Could not load batch.')}).finally(()=>{if(live)setLoading(false)});return()=>{live=false}},[id,userId]);
  const completed=new Set(progress.filter(x=>x.completed_at||Number(x.progress_percent)>=100).map(x=>x.batch_item_id));
  const percent=items.length?Math.round(completed.size/items.length*100):0;
- async function enroll(){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'){const {data:m}=await supabase!.from('memberships').select('id').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!m){router.push('/premium');return;}}
+ async function enroll(){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'){const required=batch.slug==='chapter-practice-library'?'chapter_practice':'cee_complete';const codes=required==='chapter_practice'?['chapter_practice','cee_complete']:['cee_complete'];const {data:m}=await supabase!.from('memberships').select('id').eq('user_id',userId).in('product_code',codes).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!m){router.push('/premium');return;}}
   setBusy(true);const {error}=await supabase!.from('batch_enrollments').insert({batch_id:batch.id,user_id:userId});setBusy(false);if(error&&error.code!=='23505'){setError(error.message);return;}setEnrolled(true);
  }
  async function openItem(item:any){if(!enrolled){await enroll();if(!userId||busy)return;}
