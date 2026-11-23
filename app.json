@@ -9,14 +9,14 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F8FAFC",
-      "dark": { "backgroundColor": "#0B1220" }
+      "backgroundColor": "#F6F8FA",
+      "dark": { "backgroundColor": "#11141A" }
     },
     "android": {
       "package": "com.smartprepaxom.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#4F46E5"
+        "backgroundColor": "#1E3A8A"
       }
     },
     "plugins": [
