@@ -19,7 +19,7 @@ export default function ChapterSheets(){
   ]);
   if(ce)throw ce;if(qe)throw qe;
   let list=q||[];
-  if(!list.length&&language==='as'){const fallback=await supabase.from('questions').select('id').eq('chapter_id',String(id)).eq('is_published',true).eq('language','en').order('created_at');if(fallback.error)throw fallback.error;list=fallback.data||[];}
+  if(language==='as'){const fallback=await supabase.from('questions').select('id').eq('chapter_id',String(id)).eq('is_published',true).eq('language','en').order('created_at');if(fallback.error)throw fallback.error;const seen=new Set(list.map((x:Q)=>x.id));list=[...list,...(fallback.data||[]).filter((x:Q)=>!seen.has(x.id))];}
   if(live){setTier(ch?.access_tier==='free'?'free':'premium');setPremium(Boolean(m));setIds(list.map((x:Q)=>x.id));}
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load chapter sheets.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[id,userId,language]);
  const sheets=useMemo(()=>Array.from({length:Math.ceil(ids.length/40)},(_,i)=>ids.slice(i*40,(i+1)*40)),[ids]);
