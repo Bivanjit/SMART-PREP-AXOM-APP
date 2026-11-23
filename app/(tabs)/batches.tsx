@@ -42,7 +42,7 @@ export default function Batches(){
     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{batch.title}</Text>
     {batch.subtitle?<Text style={{fontSize:11,fontWeight:'800',color:c.green}}>{batch.subtitle}</Text>:null}
     <Copy>{batch.description||batch.syllabus_summary||'Course content and learning resources will appear here after the batch is configured.'}</Copy>
-    <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Text style={{fontSize:10,color:c.textSecondary}}>{batch.items.length} published learning items</Text><Text style={{fontSize:10,fontWeight:'900',color:c.green}}>{batch.progress}%</Text></View>
+    <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Text style={{fontSize:10,color:c.textSecondary}}>{batch.access_tier==='premium'&&!batch.hasAccess?'Premium learning content':`${batch.items.length} published ${batch.items.length===1?'learning item':'learning items'}`}</Text><Text style={{fontSize:10,fontWeight:'900',color:c.green}}>{batch.progress}%</Text></View>
     <ProgressBar value={batch.progress}/>
     <Button title={batch.enrolled?'Resume Learning':batch.access_tier==='premium'?(batch.hasAccess?'Enroll in Premium Batch':batch.slug==='chapter-practice-library'?'Unlock · ₹149':'Unlock · ₹999'):'Enroll in Free Batch'} icon={batch.enrolled?'play':'arrow-forward'} loading={enrolling===batch.id} disabled={enrolling===batch.id} onPress={()=>batch.enrolled?router.push({pathname:'/batch/[id]',params:{id:batch.id}}):void enroll(batch)}/>
    </View>
