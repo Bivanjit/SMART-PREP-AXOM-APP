@@ -6,24 +6,25 @@ import {supabase} from '../lib/supabase';
 import {useTheme} from './_layout';
 import {Heading,Copy,Panel,SegmentedTabs,EmptyState,Button,SubjectBadge} from '../components/ui';
 
-type QuestionRow={id:string;chapter_id:string;prompt:string;difficulty:string;source_year:number|null;source_exam:string|null;chapters?:{name:string;subjects?:{name:string}}};
+type QuestionRow={id:string;chapter_id:string;topic_id:string|null;prompt:string;difficulty:string;source_year:number|null;source_exam:string|null;chapters?:{name:string;subjects?:{name:string}}};
 type Paper={id:string;title:string;exam_year:number;description:string|null;duration_minutes:number;total_marks:number;access_tier:string};
 export default function PYQs(){
  const {c,language,userId}=useTheme();const params=useLocalSearchParams<{mode?:string}>();
- const [rows,setRows]=useState<QuestionRow[]>([]),[papers,setPapers]=useState<Paper[]>([]),[chapters,setChapters]=useState<any[]>([]);
+ const [rows,setRows]=useState<QuestionRow[]>([]),[papers,setPapers]=useState<Paper[]>([]),[chapters,setChapters]=useState<any[]>([]),[topics,setTopics]=useState<any[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState('');
- const [year,setYear]=useState('all'),[subject,setSubject]=useState('All'),[difficulty,setDifficulty]=useState('all'),[chapter,setChapter]=useState('all'),[search,setSearch]=useState('');
+ const [year,setYear]=useState('all'),[subject,setSubject]=useState('All'),[difficulty,setDifficulty]=useState('all'),[chapter,setChapter]=useState('all'),[topic,setTopic]=useState('all'),[search,setSearch]=useState('');
  useEffect(()=>{let live=true;void(async()=>{if(!supabase){setLoading(false);return;}try{
-  const [q,p,ch]=await Promise.all([
-   supabase.from('questions').select('id,chapter_id,prompt,difficulty,source_year,source_exam,chapters(name,subjects(name))').eq('is_published',true).eq('source_type','pyq').order('source_year',{ascending:false}).limit(1000),
+  const [q,p,ch,tp]=await Promise.all([
+   supabase.from('questions').select('id,chapter_id,topic_id,prompt,difficulty,source_year,source_exam,chapters(name,subjects(name))').eq('is_published',true).eq('source_type','pyq').order('source_year',{ascending:false}).limit(1000),
    supabase.from('pyq_papers').select('id,title,exam_year,description,duration_minutes,total_marks,access_tier').eq('status','published').order('exam_year',{ascending:false}),
-   supabase.from('chapters').select('id,name,subjects(name)').eq('is_active',true).order('display_order')
+   supabase.from('chapters').select('id,name,subjects(name)').eq('is_active',true).order('display_order'),
+   supabase.from('topics').select('id,name,chapter_id').eq('is_active',true).order('display_order')
   ]);
-  if(q.error)throw q.error;if(p.error)throw p.error;if(ch.error)throw ch.error;
-  if(live){setRows((q.data||[]) as any);setPapers((p.data||[]) as Paper[]);setChapters(ch.data||[]);}
+  if(q.error)throw q.error;if(p.error)throw p.error;if(ch.error)throw ch.error;if(tp.error)throw tp.error;
+  if(live){setRows((q.data||[]) as any);setPapers((p.data||[]) as Paper[]);setChapters(ch.data||[]);setTopics(tp.data||[]);}
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load PYQs.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[]);
  const years=useMemo(()=>Array.from(new Set(rows.map(x=>x.source_year).filter(Boolean))).sort((a,b)=>Number(b)-Number(a)).map(String),[rows]);
- const filtered=useMemo(()=>rows.filter(q=>(year==='all'||String(q.source_year)===year)&&(subject==='All'||q.chapters?.subjects?.name===subject)&&(chapter==='all'||q.chapter_id===chapter)&&(difficulty==='all'||q.difficulty===difficulty)&&(!search||q.prompt.toLowerCase().includes(search.toLowerCase()))),[rows,year,subject,chapter,difficulty,search]);
+ const filtered=useMemo(()=>rows.filter(q=>(year==='all'||String(q.source_year)===year)&&(subject==='All'||q.chapters?.subjects?.name===subject)&&(chapter==='all'||q.chapter_id===chapter)&&(topic==='all'||q.topic_id===topic)&&(difficulty==='all'||q.difficulty===difficulty)&&(!search||q.prompt.toLowerCase().includes(search.toLowerCase()))),[rows,year,subject,chapter,topic,difficulty,search]);
  const subjectOptions=[{label:'All',value:'All'},{label:'Physics',value:'Physics'},{label:'Chemistry',value:'Chemistry'},{label:'Mathematics',value:'Mathematics'}];
  const startIds=(ids:string[],title:string,paperId?:string)=>{if(!ids.length)return;router.push({pathname:'/quiz',params:{questionIds:JSON.stringify(ids),testTitle:title,...(paperId?{pyqPaperId:paperId}:{})}})};
  async function startPaper(p:Paper){if(!supabase)return;if(p.access_tier==='premium'){if(!userId){router.push('/auth');return;}const {data:member}=await supabase.from('memberships').select('id').eq('user_id',userId).eq('product_code','cee_complete').eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()).limit(1).maybeSingle();if(!member){router.push('/premium');return;}}const {data,error}=await supabase.from('pyq_paper_questions').select('question_id').eq('paper_id',p.id).order('question_order');if(error){setError(error.message);return;}startIds((data||[]).map(x=>x.question_id),p.title,p.id);}
@@ -35,6 +36,7 @@ export default function PYQs(){
    <Text style={{fontSize:11,fontWeight:'800',color:c.textSecondary}}>Subject</Text><SegmentedTabs options={subjectOptions} value={subject} onChange={setSubject}/>
    <Text style={{fontSize:11,fontWeight:'800',color:c.textSecondary}}>Year</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{['all',...years].map(y=><Pressable key={y} onPress={()=>setYear(y)} style={{paddingHorizontal:13,paddingVertical:9,borderRadius:99,backgroundColor:year===y?c.green:c.card,borderWidth:1,borderColor:year===y?c.green:c.border}}><Text style={{fontSize:11,fontWeight:'800',color:year===y?'#FFFFFF':c.text}}>{y==='all'?'All years':y}</Text></Pressable>)}</ScrollView>
    <Text style={{fontSize:11,fontWeight:'800',color:c.textSecondary}}>Chapter</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{[{id:'all',name:'All chapters'},...chapters.filter(x=>subject==='All'||x.subjects?.name===subject)].map(x=><Pressable key={x.id} onPress={()=>setChapter(x.id)} style={{paddingHorizontal:12,paddingVertical:9,borderRadius:99,backgroundColor:chapter===x.id?c.green:c.card,borderWidth:1,borderColor:chapter===x.id?c.green:c.border}}><Text style={{fontSize:10,fontWeight:'800',color:chapter===x.id?'#FFFFFF':c.text}}>{x.name}</Text></Pressable>)}</ScrollView>
+   <Text style={{fontSize:11,fontWeight:'800',color:c.textSecondary}}>Topic</Text><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:7}}>{[{id:'all',name:'All topics'},...topics.filter(x=>(chapter==='all'||x.chapter_id===chapter))].map(x=><Pressable key={x.id} onPress={()=>setTopic(x.id)} style={{paddingHorizontal:12,paddingVertical:9,borderRadius:99,backgroundColor:topic===x.id?c.green:c.card,borderWidth:1,borderColor:topic===x.id?c.green:c.border}}><Text style={{fontSize:10,fontWeight:'800',color:topic===x.id?'#FFFFFF':c.text}}>{x.name}</Text></Pressable>)}</ScrollView>
    <Text style={{fontSize:11,fontWeight:'800',color:c.textSecondary}}>Difficulty</Text><SegmentedTabs options={[{label:'All',value:'all'},{label:'Easy',value:'easy'},{label:'Medium',value:'medium'},{label:'Hard',value:'hard'}]} value={difficulty} onChange={setDifficulty}/>
   </View>
   <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Heading style={{fontSize:17}}>Questions</Heading><Text style={{fontSize:11,fontWeight:'800',color:c.green}}>{filtered.length} available</Text></View>
