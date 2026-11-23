@@ -24,7 +24,7 @@ function Metric({icon,label,value}:{icon:keyof typeof Ionicons.glyphMap;label:st
  </View>;
 }
 export default function Home(){
- const {c,userEmail,userId,bookmarks,language}=useTheme();
+ const {c,mode,userEmail,userId,bookmarks,language}=useTheme();
  const [lecture,setLecture]=useState<Lecture|null>(null),[count,setCount]=useState(0),[loading,setLoading]=useState(true);
  const [announcement,setAnnouncement]=useState<Announcement|null>(null),[announcementVisible,setAnnouncementVisible]=useState(false),[isPremium,setIsPremium]=useState(false);
  useEffect(()=>{let live=true;void(async()=>{
@@ -72,16 +72,16 @@ export default function Home(){
      <View style={{flex:1,gap:2}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1,color:c.blue}}>SMARTPREP AXOM</Text><Text numberOfLines={1} style={{fontSize:18,fontWeight:'900',color:c.text}}>{tr(language,'Hi')}, {greeting} 👋</Text></View>
     </View>
     <View style={{flexDirection:'row',alignItems:'center',gap:8}}>
-     <View style={{paddingHorizontal:10,paddingVertical:6,borderRadius:20,backgroundColor:isPremium?c.green:c.soft}}><Text style={{fontSize:10,fontWeight:'900',color:isPremium?'#FFFFFF':c.blue}}>{isPremium?'PREMIUM':'FREE PLAN'}</Text></View>
+     <View style={{paddingHorizontal:10,paddingVertical:6,borderRadius:20,backgroundColor:isPremium?(mode==='dark'?'#1C3D32':'#14532D'):c.soft}}><Text style={{fontSize:10,fontWeight:'900',color:isPremium?'#FFFFFF':c.blue}}>{isPremium?'PREMIUM':'FREE PLAN'}</Text></View>
      <Pressable onPress={()=>router.push('/notifications')} accessibilityLabel="Notifications" style={{width:40,height:40,borderRadius:13,backgroundColor:c.card,borderWidth:1,borderColor:c.border,alignItems:'center',justifyContent:'center'}}><Ionicons name="notifications-outline" size={20} color={c.text}/></Pressable>
     </View>
    </View>
-   <View style={{backgroundColor:c.green,borderRadius:22,padding:19,gap:11,overflow:'hidden'}}>
+   <View style={{backgroundColor:mode==='dark'?'#1C3D32':'#14532D',borderRadius:22,padding:19,gap:11,overflow:'hidden'}}>
     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.3,color:'#D7EBDD'}}>YOUR NEXT MILESTONE</Text><View style={{backgroundColor:'#FFFFFF20',paddingHorizontal:10,paddingVertical:5,borderRadius:20}}><Text style={{fontSize:10,fontWeight:'900',color:'#FFFFFF'}}>2027</Text></View></View>
     <Text style={{fontSize:28,fontWeight:'900',letterSpacing:-.7,color:'#FFFFFF'}}>Assam CEE</Text>
     <Text style={{fontSize:13,lineHeight:19,color:'#E4F0E7'}}>A focused preparation space for Physics, Chemistry and Mathematics.</Text>
     <View style={{flexDirection:'row',gap:7,marginTop:1}}>{['PHYSICS','CHEMISTRY','MATHEMATICS'].map(x=><View key={x} style={{backgroundColor:'#FFFFFF20',paddingHorizontal:9,paddingVertical:6,borderRadius:8}}><Text style={{color:'#FFFFFF',fontSize:9,fontWeight:'900'}}>{x}</Text></View>)}</View>
-    <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:'#FFFFFF',paddingHorizontal:14,paddingVertical:10,borderRadius:10,flexDirection:'row',alignItems:'center',gap:7,marginTop:2}}><Text style={{fontWeight:'900',fontSize:12,color:c.green}}>Start practising</Text><Ionicons name="arrow-forward" size={14} color={c.green}/></Pressable>
+    <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:'#FFFFFF',paddingHorizontal:14,paddingVertical:10,borderRadius:10,flexDirection:'row',alignItems:'center',gap:7,marginTop:2}}><Text style={{fontWeight:'900',fontSize:12,color:'#14532D'}}>Start practising</Text><Ionicons name="arrow-forward" size={14} color={c.green}/></Pressable>
    </View>
    <View style={{flexDirection:'row',gap:10}}>
     <Metric icon="clipboard-outline" label="Test attempts" value={loading?'—':String(count)}/>
