@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import {Alert,Image,ScrollView,TextInput,View,Text,ActivityIndicator,Pressable} from 'react-native';
-import {router} from 'expo-router';
+import {router,useLocalSearchParams} from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import {imageAssetToBytes} from '../lib/imageUpload';
 import {Ionicons} from '@expo/vector-icons';
@@ -8,7 +8,7 @@ import {supabase} from '../lib/supabase';
 import {useTheme} from './_layout';
 import {Heading,Copy,Panel,Button} from '../components/ui';
 export default function Payment(){
- const {c,userEmail}=useTheme();const [settings,setSettings]=useState<any>(null);const [plans,setPlans]=useState<Record<string,any>>({});const [loading,setLoading]=useState(true);const [product,setProduct]=useState<'chapter_practice'|'cee_complete'>('cee_complete');const [utr,setUtr]=useState('');const [txn,setTxn]=useState('');const [proof,setProof]=useState<ImagePicker.ImagePickerAsset|null>(null);const [busy,setBusy]=useState(false);
+ const params=useLocalSearchParams<{product?:string}>();const {c,userEmail}=useTheme();const [settings,setSettings]=useState<any>(null);const [plans,setPlans]=useState<Record<string,any>>({});const [loading,setLoading]=useState(true);const [product,setProduct]=useState<'chapter_practice'|'cee_complete'>(params.product==='chapter_practice'?'chapter_practice':'cee_complete');const [utr,setUtr]=useState('');const [txn,setTxn]=useState('');const [proof,setProof]=useState<ImagePicker.ImagePickerAsset|null>(null);const [busy,setBusy]=useState(false);
  useEffect(()=>{let live=true;void(async()=>{try{if(!supabase)return;const {data,error}=await supabase.from('payment_settings').select('*').eq('id',true).maybeSingle();if(error)throw error;if(live)setSettings(data||null)}catch(e){if(live)Alert.alert('Payment settings unavailable',e instanceof Error?e.message:'Please try again later.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[]);
  const field={borderWidth:1,borderColor:c.border,color:c.text,backgroundColor:c.bg,borderRadius:12,padding:14,fontSize:15};
  async function chooseProof(){const result=await ImagePicker.launchImageLibraryAsync({mediaTypes:['images'],allowsEditing:true,quality:.85,base64:true});if(!result.canceled&&result.assets[0])setProof(result.assets[0]);}
