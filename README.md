@@ -17,7 +17,7 @@ The app and website use the same Supabase project: `yydstdwknkgqelbxnvre`.
 - Public client publishable key is included in the app environment. Never put a Supabase secret/service-role key in the app, website or GitHub.
 
 ## Admin console
-Open [SmartPrep Axom Admin](https://smart-axom-prep.vercel.app/admin).
+Open [SmartPrep Axom Admin](https://smart-axom-prep.vercel.app
 
 First-time setup:
 1. In Supabase Dashboard → Authentication → Providers → Email, turn **Confirm email** OFF for this temporary no-verification launch.
