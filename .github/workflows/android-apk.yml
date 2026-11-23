@@ -1,4 +1,4 @@
-name: Build SmartPrep Axom V2.3-V2.5 Release APK
+name: Build SmartPrep Axom Android Release APK (GitHub Actions + Gradle)
 on:
   workflow_dispatch:
   push:
