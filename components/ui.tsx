@@ -5,14 +5,15 @@ import {Ionicons} from '@expo/vector-icons';
 import Svg,{Circle} from 'react-native-svg';
 import {useTheme} from '../app/_layout';
 import {designMetrics} from '../lib/theme';
+import {tr} from '../lib/i18n';
 
 export function Heading({children,style}:{children:React.ReactNode;style?:TextStyle}){
- const {c}=useTheme();
- return <Text style={[{color:c.text,fontSize:21,fontWeight:'800',letterSpacing:-.45},style]}>{children}</Text>;
+ const {c,language}=useTheme();const content=typeof children==='string'?tr(language,children):children;
+ return <Text style={[{color:c.text,fontSize:21,fontWeight:'800',letterSpacing:-.45},style]}>{content}</Text>;
 }
 export function Copy({children,style}:{children:React.ReactNode;style?:TextStyle}){
- const {c}=useTheme();
- return <Text style={[{color:c.textSecondary,fontSize:13,lineHeight:20},style]}>{children}</Text>;
+ const {c,language}=useTheme();const content=typeof children==='string'?tr(language,children):children;
+ return <Text style={[{color:c.textSecondary,fontSize:13,lineHeight:20},style]}>{content}</Text>;
 }
 export function Panel({children,style}:{children:React.ReactNode;style?:ViewStyle}){
  const {c}=useTheme();
@@ -20,7 +21,7 @@ export function Panel({children,style}:{children:React.ReactNode;style?:ViewStyl
 }
 type ButtonVariant='primary'|'secondary'|'quiet'|'disabled';
 export function Button({title,onPress,variant='primary',icon,disabled=false,loading=false}:{title:string;onPress:()=>void;variant?:ButtonVariant;icon?:keyof typeof Ionicons.glyphMap;disabled?:boolean;loading?:boolean}){
- const {c}=useTheme();
+ const {c,language}=useTheme();
  const unavailable=disabled||variant==='disabled'||loading;
  const primary=variant==='primary';
  const secondary=variant==='secondary';
@@ -29,7 +30,7 @@ export function Button({title,onPress,variant='primary',icon,disabled=false,load
  const fg=unavailable?c.textMuted:primary?'#FFFFFF':secondary?c.green:c.text;
  return <Pressable accessibilityRole="button" accessibilityState={{disabled:unavailable}} disabled={unavailable} onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({backgroundColor:bg,borderWidth:secondary?1:0,borderColor:secondary?c.green:'transparent',borderRadius:15,paddingVertical:14,paddingHorizontal:18,minHeight:50,opacity:pressed?.78:1,shadowColor:primary?c.amber:'transparent',shadowOpacity:primary?.2:0,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:primary?3:0,alignItems:'center',justifyContent:'center',flexDirection:'row',gap:8})}>
   {loading?<ActivityIndicator size="small" color={fg}/>:icon?<Ionicons name={icon} size={17} color={fg}/>:null}
-  <Text style={{color:fg,fontWeight:'800',fontSize:13}}>{title}</Text>
+  <Text style={{color:fg,fontWeight:'800',fontSize:13}}>{tr(language,title)}</Text>
  </Pressable>;
 }
 export function SubjectBadge({subject}:{subject:'Physics'|'Chemistry'|'Mathematics'}){
@@ -40,18 +41,18 @@ export function SubjectBadge({subject}:{subject:'Physics'|'Chemistry'|'Mathemati
 }
 export type QuestionStatus='answered'|'not_answered'|'review'|'not_visited';
 export function StatusBadge({status,count,compact=false}:{status:QuestionStatus;count?:number;compact?:boolean}){
- const {c}=useTheme();
+ const {c,language}=useTheme();
  const map={answered:{label:'Answered',icon:'checkmark-circle',color:c.success},not_answered:{label:'Not Answered',icon:'square-outline',color:c.error},review:{label:'Marked for Review',icon:'bookmark',color:c.review},not_visited:{label:'Not Visited',icon:'remove-circle-outline',color:c.unvisited}} as const;
  const m=map[status];
- return <View style={{flexDirection:'row',alignItems:'center',gap:7}}><Ionicons name={m.icon} size={compact?14:16} color={m.color}/><Text style={{fontSize:compact?10:12,fontWeight:'700',color:c.textSecondary}}>{m.label}{typeof count==='number'?' ('+count+')':''}</Text></View>;
+ return <View style={{flexDirection:'row',alignItems:'center',gap:7}}><Ionicons name={m.icon} size={compact?14:16} color={m.color}/><Text style={{fontSize:compact?10:12,fontWeight:'700',color:c.textSecondary}}>{tr(language,m.label)}{typeof count==='number'?' ('+count+')':''}</Text></View>;
 }
 export function SegmentedTabs<T extends string>({options,value,onChange}:{options:{label:string;value:T}[];value:T;onChange:(value:T)=>void}){
- const {c}=useTheme();
- return <View style={{flexDirection:'row',padding:4,borderRadius:14,backgroundColor:c.surfaceElevated,gap:3}}>{options.map(option=><Pressable key={option.value} accessibilityRole="tab" accessibilityState={{selected:value===option.value}} onPress={()=>onChange(option.value)} style={{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',paddingHorizontal:5,borderRadius:10,backgroundColor:value===option.value?c.green:c.surfaceElevated}}><Text numberOfLines={1} style={{fontSize:11,fontWeight:'800',color:value===option.value?'#FFFFFF':c.textSecondary}}>{option.label}</Text></Pressable>)}</View>;
+ const {c,language}=useTheme();
+ return <View style={{flexDirection:'row',padding:4,borderRadius:14,backgroundColor:c.surfaceElevated,gap:3}}>{options.map(option=><Pressable key={option.value} accessibilityRole="tab" accessibilityState={{selected:value===option.value}} onPress={()=>onChange(option.value)} style={{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',paddingHorizontal:5,borderRadius:10,backgroundColor:value===option.value?c.green:c.surfaceElevated}}><Text numberOfLines={1} style={{fontSize:11,fontWeight:'800',color:value===option.value?'#FFFFFF':c.textSecondary}} >{tr(language,option.label)}</Text></Pressable>)}</View>;
 }
 export function EmptyState({icon='file-tray-outline',title,description,action}:{icon?:keyof typeof Ionicons.glyphMap;title:string;description:string;action?:React.ReactNode}){
- const {c}=useTheme();
- return <View style={{alignItems:'center',justifyContent:'center',padding:24,gap:10,borderRadius:16,backgroundColor:c.surfaceElevated}}><View style={{width:52,height:52,borderRadius:17,backgroundColor:c.card,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={25} color={c.textMuted}/></View><Text style={{fontSize:15,fontWeight:'900',color:c.text,textAlign:'center'}}>{title}</Text><Text style={{fontSize:12,lineHeight:18,color:c.textSecondary,textAlign:'center'}}>{description}</Text>{action}</View>;
+ const {c,language}=useTheme();
+ return <View style={{alignItems:'center',justifyContent:'center',padding:24,gap:10,borderRadius:16,backgroundColor:c.surfaceElevated}}><View style={{width:52,height:52,borderRadius:17,backgroundColor:c.card,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={25} color={c.textMuted}/></View><Text style={{fontSize:15,fontWeight:'900',color:c.text,textAlign:'center'}}>{tr(language,title)}</Text><Text style={{fontSize:12,lineHeight:18,color:c.textSecondary,textAlign:'center'}}>{tr(language,description)}</Text>{action}</View>;
 }
 export function ProgressBar({value,height=8}:{value:number;height?:number}){
  const {c}=useTheme();const safe=Math.max(0,Math.min(100,value));
