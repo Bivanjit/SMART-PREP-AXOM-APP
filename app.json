@@ -5,12 +5,11 @@
     "scheme": "smartprepaxom",
     "version": "3.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F6F8FA",
-      "dark": { "backgroundColor": "#11141A" }
+      "backgroundColor": "#F6F8FA"
     },
     "android": {
       "package": "com.smartprepaxom.app",
@@ -25,8 +24,7 @@
         "image": "./assets/icon.png",
         "imageWidth": 150,
         "resizeMode": "contain",
-        "backgroundColor": "#F6F8FA",
-        "dark": { "backgroundColor": "#11141A" }
+        "backgroundColor": "#F6F8FA"
       }],
       "expo-notifications"
     ],
