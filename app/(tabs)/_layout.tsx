@@ -33,7 +33,7 @@ export default function TabsLayout(){
     </View>
     <Pressable onPress={()=>go('/(tabs)/profile')} style={{flexDirection:'row',alignItems:'center',gap:10,paddingVertical:15,borderBottomWidth:1,borderBottomColor:c.border}}>
      {profile.avatar?<Image source={{uri:profile.avatar}} style={{width:42,height:42,borderRadius:21}}/>:<View style={{width:42,height:42,borderRadius:21,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="person" size={20} color={c.primary}/></View>}
-     <View style={{flex:1,gap:2}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{profile.name}</Text><Text numberOfLines={1} style={{fontSize:10,color:c.textSecondary}}>{userEmail||'Sign in to sync your progress'}</Text><Text style={{fontSize:9,fontWeight:'900',color:profile.premium?c.amber:c.green}}>{profile.premium?'♛ PREMIUM MEMBER':'FREE PLAN'}</Text></View><Ionicons name="chevron-forward" size={17} color={c.textMuted}/>
+     <View style={{flex:1,gap:2}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>{profile.name}</Text><Text numberOfLines={1} style={{fontSize:10,color:c.textSecondary}}>{userEmail||'Sign in to sync your progress'}</Text><View style={{flexDirection:'row',alignItems:'center',gap:4}}><Ionicons name={profile.premium?'ribbon':'person-outline'} size={11} color={profile.premium?c.amber:c.green}/><Text style={{fontSize:9,fontWeight:'900',color:profile.premium?c.amber:c.green}}>{profile.premium?'PREMIUM MEMBER':'FREE PLAN'}</Text></View></View><Ionicons name="chevron-forward" size={17} color={c.textMuted}/>
     </Pressable>
     <ScrollView showsVerticalScrollIndicator={false}>
      <Text style={{fontSize:11,fontWeight:'800',letterSpacing:1,color:c.muted,marginTop:20,marginBottom:5}}>STUDY</Text>
