@@ -180,7 +180,7 @@ begin
           when nullif(trim(d.answers ->> mtq.question_id::text),'') is null then 0
           when (case when d.answers ->> mtq.question_id::text ~ '^[0-3]$'
             then chr(65 + (d.answers ->> mtq.question_id::text)::integer)
-            else upper(trim(d.answers ->> mtq.question_id::text)) end) = upper(trim(q.answer_key) then mtq.marks
+            else upper(trim(d.answers ->> mtq.question_id::text)) end) = upper(trim(q.answer_key)) then mtq.marks
           else -mtq.negative_marks
         end
       from public.mock_test_questions mtq
