@@ -179,7 +179,18 @@ Deno.serve(async (req: Request) => {
       violation_count: Math.max(0, Math.min(1000, Number(body.violation_count) || 0)),
       results_released_at: (testId && manualRelease) ? null : new Date().toISOString()
     }).select("id").single();
-    if (attemptError || !attempt) throw attemptError || new Error("Could not save attempt");
+    if (attemptError || !attempt) {
+      if (attemptError?.code === "23505" && testId) {
+        const { data: existing } = await admin.from("attempts").select("id,results_released_at")
+          .eq("user_id", user.id).eq("mock_test_id", testId).not("submitted_at", "is", null)
+          .order("submitted_at", { ascending: false }).limit(1).maybeSingle();
+        if (existing) return Response.json({
+          attempt_id: existing.id, pending_release: !existing.results_released_at, title,
+          message: "This mock submission has already been recorded."
+        }, { headers: cors });
+      }
+      throw attemptError || new Error("Could not save attempt");
+    }
 
     const { error: answerError } = await admin.from("attempt_answers").insert(answerRows.map(row => ({ ...row, attempt_id: attempt.id })));
     if (answerError) {
