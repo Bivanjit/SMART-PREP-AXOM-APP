@@ -28,7 +28,7 @@ function wrapBareTexCommands(input:string){
   const name=match[1],start=match.index;
   let cursor=commands.lastIndex;
   const readGroup=(at:number):number=>{
-   while(/\\s/.test(input[at]||''))at++;
+   while(/\s/.test(input[at]||''))at++;
    if(input[at]!=='{')return -1;
    let depth=0;
    for(let i=at;i<input.length;i++){
