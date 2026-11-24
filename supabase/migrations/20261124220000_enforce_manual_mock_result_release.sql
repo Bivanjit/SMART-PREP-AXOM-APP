@@ -50,3 +50,12 @@ using (
 create index if not exists attempts_manual_release_queue_idx
   on public.attempts(mock_test_id, submitted_at desc)
   where results_released_at is null;
+
+-- Question answer keys and explanations are not selectable through the public Data API.
+-- Trusted Edge Functions use the service-role client; admin editing reads through admin_get_questions().
+revoke select on table public.questions from anon, authenticated;
+grant select (
+  id, chapter_id, prompt, options, access_tier, is_published, language, difficulty,
+  created_at, updated_at, question_image_path, source_type, source_year, source_exam,
+  source_question_number, source_reference, tags, topic_id
+) on table public.questions to anon, authenticated;
