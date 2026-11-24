@@ -44,9 +44,10 @@ Deno.serve(async (req: Request) => {
     let rules = new Map<string, { answer_key: string; explanation: string | null; marks: number; negative: number }>();
 
     if (testId) {
-      const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status").eq("id", testId).maybeSingle();
+      const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status,test_type,result_release_mode").eq("id", testId).maybeSingle();
       if (testError || !test || test.status !== "published") return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
       title = test.title;
+      const manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
       if (test.access_tier === "premium") {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
@@ -150,7 +151,8 @@ Deno.serve(async (req: Request) => {
     const { data: attempt, error: attemptError } = await admin.from("attempts").insert({
       user_id: user.id, mock_test_id: testId, source, title,
       score, max_score: maxScore, correct_count: correct, wrong_count: wrong,
-      skipped_count: skipped, submitted_at: new Date().toISOString()
+      skipped_count: skipped, submitted_at: new Date().toISOString(),
+      results_released_at: (testId && manualRelease) ? null : new Date().toISOString()
     }).select("id").single();
     if (attemptError || !attempt) throw attemptError || new Error("Could not save attempt");
 
@@ -159,6 +161,8 @@ Deno.serve(async (req: Request) => {
       await admin.from("attempts").delete().eq("id", attempt.id);
       throw answerError;
     }
+
+    if (testId) { const { data: testMode } = await admin.from("mock_tests").select("test_type,result_release_mode").eq("id", testId).maybeSingle(); if (testMode?.test_type === "full_length" && testMode.result_release_mode === "manual") { return Response.json({ attempt_id: attempt.id, pending_release: true, title, message: "Your submission is saved. Results will appear after admin review and release." }, { headers: cors }); } }
 
     const { data: xpRows } = await admin.from("question_xp_ledger").select("xp").eq("attempt_id", attempt.id);
     const xpAwarded = (xpRows || []).reduce((sum: number, row: any) => sum + Number(row.xp || 0), 0);
