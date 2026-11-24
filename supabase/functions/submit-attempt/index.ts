@@ -52,7 +52,14 @@ Deno.serve(async (req: Request) => {
       if (test.opens_at && now < new Date(test.opens_at).getTime()) return Response.json({ error: "This mock has not opened yet." }, { status: 409, headers: cors });
       const autoSubmitted = body.auto_submitted === true;
       const earlyAllowed = test.allow_early_submission === true;
-      if (test.closes_at && now < new Date(test.closes_at).getTime() && !earlyAllowed && !autoSubmitted) return Response.json({ error: "Submission is locked until the scheduled mock closes." }, { status: 409, headers: cors });
+      if (test.closes_at && now < new Date(test.closes_at).getTime() && !earlyAllowed) {
+        if (!autoSubmitted) return Response.json({ error: "Submission is locked until the scheduled mock closes." }, { status: 409, headers: cors });
+        const { data: lastBackground } = await admin.from("mock_test_events").select("occurred_at").eq("test_id", testId).eq("user_id", user.id).eq("event_type", "app_background").order("occurred_at", { ascending: false }).limit(1).maybeSingle();
+        const { data: lastForeground } = await admin.from("mock_test_events").select("occurred_at").eq("test_id", testId).eq("user_id", user.id).eq("event_type", "app_foreground").order("occurred_at", { ascending: false }).limit(1).maybeSingle();
+        const backgroundMs = lastBackground ? new Date(lastBackground.occurred_at).getTime() : 0;
+        const foregroundMs = lastForeground ? new Date(lastForeground.occurred_at).getTime() : 0;
+        if (!backgroundMs || foregroundMs > backgroundMs || now - backgroundMs < 15000) return Response.json({ error: "Auto-submit requires a verified app-background interval longer than 15 seconds." }, { status: 409, headers: cors });
+      }
       if (test.closes_at && now >= new Date(test.closes_at).getTime() && !autoSubmitted) body.auto_submitted = true;
       manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
       if (test.access_tier === "premium") {
