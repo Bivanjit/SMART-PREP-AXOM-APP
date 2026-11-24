@@ -15,6 +15,11 @@ Deno.serve(async(req:Request)=>{
   const {data:test,error}=await admin.from("mock_tests").select("id,status,opens_at,closes_at,anti_cheat_enabled").eq("id",testId).maybeSingle();
   if(error||!test)return Response.json({error:"Mock not found."},{status:404,headers:cors});
   if(!test.anti_cheat_enabled)return Response.json({recorded:false},{headers:cors});
+  // Only accept telemetry while this account has an active server-saved draft for this mock.
+  const {data:draft,error:draftError}=await admin.from("attempt_drafts").select("user_id,test_id,updated_at").eq("user_id",user.id).eq("test_id",testId).maybeSingle();
+  if(draftError)throw draftError;
+  if(!draft)return Response.json({error:"No active mock attempt was found."},{status:409,headers:cors});
+  if(draft.updated_at&&Date.now()-new Date(draft.updated_at).getTime()>30*60*1000)return Response.json({error:"Mock attempt is no longer active."},{status:409,headers:cors});
   const {error:insertError}=await admin.from("mock_test_events").insert({attempt_id:null,test_id:testId,user_id:user.id,event_type:event,occurred_at:new Date().toISOString(),details:{client_reported:true}});
   if(insertError)throw insertError;
   const {error:auditError}=await admin.from("security_events").insert({user_id:user.id,event_type:"mock_"+event,severity:event==="app_background"||event==="focus_lost"?"warning":"info",source:"mobile_app",details:{test_id:testId,server_recorded_at:new Date().toISOString()}});
