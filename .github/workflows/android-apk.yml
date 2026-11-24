@@ -5,7 +5,7 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview]
+    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening]
 permissions:
   contents: write
 jobs:
