@@ -24,7 +24,7 @@ function legacyPlainText(input:string){
 function wrapBareMathPlain(input:string){
  let s=input.replace(/\\(?:sqrt|frac|dfrac)\{(?:[^{}]|\{[^{}]*\})*\}/g,m=>'\\('+m+'\\)');
  // Wrap complete polynomial/rational inequalities as one expression when they end in a comparison.
- s=s.replace(/(\({1,2}[A-Za-z0-9(][A-Za-z0-9\s{}^_()+\-*/.]*?(?:<=|>=|=|<|>)\s*-?\d+(?:\.\d+)?)$/g,(_m,expr)=>{const balanced=expr.split('(').length===expr.split(')').length&&expr.split('{').length===expr.split('}').length;return balanced?'\\('+expr+'\\)':expr;});
+ s=s.replace(/([\s\S]*?)(\({1,2}[A-Za-z0-9(][A-Za-z0-9\s{}^_()+\-*/.]*?(?:<=|>=|=|<|>)\s*-?\d+(?:\.\d+)?)$/g,(_m,prefix,expr)=>{const balanced=expr.split('(').length===expr.split(')').length&&expr.split('{').length===expr.split('}').length;return balanced?prefix+'\\('+expr+'\\)':prefix+expr;});
  const parts=s.split(/(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?:\\\\.|[^$])*\$)/g);
  return parts.map(part=>/^(?:\\\[|\\\(|\$\$|\$)/.test(part)?part:part.replace(/[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+(?:\s+[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+)*/g,m=>'\\('+m+'\\)')).join('');
 }
