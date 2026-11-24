@@ -16,7 +16,7 @@ function formatLegacyFractions(s:string){
   if(s[slash]!=='/'||s[ds]!=='('){out+=s.slice(i,ne+1);i=ne+1;continue;}
   const de=matchingParen(s,ds);if(de<0){out+=s.slice(i,ne+1);i=ne+1;continue;}
   const n=s.slice(i+1,ne).trim(),d=s.slice(ds+1,de).trim();
-  out+='\\\\(\\\\dfrac{'+n+'}{'+d+'}\\\\)';i=de+1;
+  out+='\\(\\dfrac{'+n+'}{'+d+'}\\)';i=de+1;
  }
  return out;
 }
