@@ -46,8 +46,13 @@ Deno.serve(async (req: Request) => {
 
     if (testId) {
       const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status,test_type,result_release_mode,opens_at,closes_at,allow_early_submission").eq("id", testId).maybeSingle();
-      if (testError || !test || test.status !== "published") return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
+      if (testError || !test || !["published","scheduled","completed"].includes(test.status)) return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
       title = test.title;
+      if (user) {
+        const { data: priorAttempt, error: priorError } = await admin.from("attempts").select("id,results_released_at").eq("user_id", user.id).eq("mock_test_id", testId).not("submitted_at", "is", null).order("submitted_at", { ascending: false }).limit(1).maybeSingle();
+        if (priorError) throw priorError;
+        if (priorAttempt) return Response.json({ attempt_id: priorAttempt.id, pending_release: !priorAttempt.results_released_at, title, message: "This mock submission has already been recorded." }, { headers: cors });
+      }
       const now = Date.now();
       if (test.opens_at && now < new Date(test.opens_at).getTime()) return Response.json({ error: "This mock has not opened yet." }, { status: 409, headers: cors });
       const autoSubmitted = body.auto_submitted === true;
