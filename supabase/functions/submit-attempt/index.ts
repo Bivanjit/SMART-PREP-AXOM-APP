@@ -66,7 +66,7 @@ Deno.serve(async (req: Request) => {
         if (!backgroundMs || foregroundMs > backgroundMs || now - backgroundMs < 15000) return Response.json({ error: "Auto-submit requires a verified app-background interval longer than 15 seconds." }, { status: 409, headers: cors });
       }
       if (test.closes_at && now >= new Date(test.closes_at).getTime() && !autoSubmitted) body.auto_submitted = true;
-      manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
+      manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual" && (!test.closes_at || now < new Date(test.closes_at).getTime());
       if (test.access_tier === "premium") {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
