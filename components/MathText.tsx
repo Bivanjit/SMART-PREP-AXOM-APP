@@ -3,6 +3,10 @@ import {View,ActivityIndicator} from 'react-native';
 import {WebView} from 'react-native-webview';
 import {useTheme} from '../app/_layout';
 
+function normalizeLegacyMath(value:string){
+ const superscript:Record<string,string>={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻','+':'⁺','(':'⁽',')':'⁾'};
+ return value.replace(/([A-Za-z0-9)\\]])\\^(-?\\d+)/g,(_match,base,exponent)=>base+String(exponent).split('').map((ch:string)=>superscript[ch]||ch).join('')).replace(/\\s*<=\\s*/g,' ≤ ').replace(/\\s*>=\\s*/g,' ≥ ');
+}
 function escapeHtml(value:string){return value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 export default function MathText({text,size=16,color}: {text:string;size?:number;color?:string}){
  const {c}=useTheme();const [height,setHeight]=useState(42);const [ready,setReady]=useState(false);
