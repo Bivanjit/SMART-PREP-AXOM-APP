@@ -11,9 +11,9 @@ export function Heading({children,style}:{children:React.ReactNode;style?:TextSt
  const {c,language}=useTheme();const content=typeof children==='string'?tr(language,children):children;
  return <Text style={[{color:c.text,fontSize:21,fontWeight:'800',letterSpacing:-.45},style]}>{content}</Text>;
 }
-export function Copy({children,style}:{children:React.ReactNode;style?:TextStyle}){
+export function Copy({children,style,numberOfLines}:{children:React.ReactNode;style?:TextStyle;numberOfLines?:number}){
  const {c,language}=useTheme();const content=typeof children==='string'?tr(language,children):children;
- return <Text style={[{color:c.textSecondary,fontSize:13,lineHeight:20},style]}>{content}</Text>;
+ return <Text numberOfLines={numberOfLines} style={[{color:c.textSecondary,fontSize:13,lineHeight:20},style]}>{content}</Text>;
 }
 export function Panel({children,style}:{children:React.ReactNode;style?:ViewStyle}){
  const {c}=useTheme();
