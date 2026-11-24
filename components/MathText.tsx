@@ -21,12 +21,42 @@ function legacyPlainText(input:string){
 // Question-bank records often contain bare TeX (for example CH_{2}O or M^{-1})
 // rather than delimiter-wrapped TeX. Wrap only unmistakable formula tokens;
 // ordinary prose is left untouched.
+function wrapBareTexCommands(input:string){
+ const commands=/\\(dfrac|frac|tfrac|binom|sqrt)\b/g;
+ let output='',last=0,match:RegExpExecArray|null;
+ while((match=commands.exec(input))){
+  const name=match[1],start=match.index;
+  let cursor=commands.lastIndex;
+  const readGroup=(at:number):number=>{
+   while(/\s/.test(input[at]||''))at++;
+   if(input[at]!=='{')return -1;
+   let depth=0;
+   for(let i=at;i<input.length;i++){
+    if(input[i]==='{')depth++;
+    else if(input[i]==='}'&&--depth===0)return i+1;
+   }
+   return -1;
+  };
+  const firstEnd=readGroup(cursor);
+  if(firstEnd<0)continue;
+  cursor=firstEnd;
+  if(name!=='sqrt'){
+   const secondEnd=readGroup(cursor);
+   if(secondEnd<0)continue;
+   cursor=secondEnd;
+  }
+  output+=input.slice(last,start)+'\\('+input.slice(start,cursor)+'\\)';
+  last=cursor;
+  commands.lastIndex=cursor;
+ }
+ return output?output+input.slice(last):input;
+}
 function wrapBareMathPlain(input:string){
- let s=input.replace(/\\(?:sqrt|frac|dfrac)\{(?:[^{}]|\{[^{}]*\})*\}/g,m=>'\\('+m+'\\)');
+ let s=wrapBareTexCommands(input);
  // Wrap complete polynomial/rational inequalities as one expression when they end in a comparison.
  s=s.replace(/([\s\S]*?)(\({1,2}[A-Za-z0-9(][A-Za-z0-9\s{}^_()+\-*/.]*?(?:<=|>=|=|<|>)\s*-?\d+(?:\.\d+)?)$/g,(_m,prefix,expr)=>{const balanced=expr.split('(').length===expr.split(')').length&&expr.split('{').length===expr.split('}').length;return balanced?prefix+'\\('+expr+'\\)':prefix+expr;});
  const parts=s.split(/(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?:\\\\.|[^$])*\$)/g);
- return parts.map(part=>/^(?:\\\[|\\\(|\$\$|\$)/.test(part)?part:part.replace(/[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+(?:\s+[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+)*/g,m=>'\\('+m+'\\)')).join('');
+ return parts.map(part=>/^(?:\\\[|\\\(|\$\$|\$)/.test(part)?part:part.replace(/(?:\([^()]*\)|[A-Za-z0-9]+)(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+(?:\s+(?:\([^()]*\)|[A-Za-z0-9]+)(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+)*/g,m=>'\\('+m+'\\)')).join('');
 }
 function wrapBareMath(input:string){
  const parts=input.split(/(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?:\\\\.|[^$])*\$)/g);
