@@ -10,9 +10,9 @@ import {Copy,Heading,Panel,Button,ProgressRing,ProgressBar} from '../../componen
 const assamHero='https://commons.wikimedia.org/wiki/Special:FilePath/A_Tea_Garden_of_Assam.jpg?width=1400';
 type HomeData={name:string;avatar:string|null;premium:boolean;attempts:number;publishedQuestions:number;attemptedQuestions:number;weeklyXp:number;unread:number;saved:number;latestLecture:{id:string;title:string;subject:string}|null;};
 
-function QuickAction({icon,title,onPress}:{icon:keyof typeof Ionicons.glyphMap;title:string;onPress:()=>void}){
+function QuickAction({icon,title,onPress,accent}:{icon:keyof typeof Ionicons.glyphMap;title:string;onPress:()=>void;accent:string}){
  const {c}=useTheme();
- return <Pressable onPress={onPress} accessibilityRole="button" style={({pressed})=>({flex:1,minHeight:76,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,alignItems:'center',justifyContent:'center',gap:7,opacity:pressed?.75:1})}><Ionicons name={icon} size={22} color={c.green}/><Text style={{fontSize:11,fontWeight:'800',color:c.text}}>{title}</Text></Pressable>;
+ return <Pressable onPress={onPress} accessibilityRole="button" style={({pressed})=>({flex:1,minHeight:88,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:17,alignItems:'center',justifyContent:'center',gap:9,opacity:pressed?.88:1,transform:[{scale:pressed?.97:1}],shadowColor:accent,shadowOpacity:pressed?.12:.07,shadowRadius:10,shadowOffset:{width:0,height:4},elevation:2})}><View style={{width:40,height:40,borderRadius:14,backgroundColor:accent+'18',alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={22} color={accent}/></View><Text style={{fontSize:11,fontWeight:'900',color:c.text}}>{title}</Text></Pressable>;
 }
 function SectionTitle({title,action,onPress}:{title:string;action?:string;onPress?:()=>void}){
  const {c}=useTheme();return <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Heading style={{fontSize:17}}>{title}</Heading>{action&&onPress?<Pressable onPress={onPress}><Text style={{fontSize:11,fontWeight:'800',color:c.green}}>{action}</Text></Pressable>:null}</View>;
@@ -58,8 +58,8 @@ export default function Home(){
    <View style={{backgroundColor:data.premium?c.amber:c.surfaceElevated,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:10,fontWeight:'900',color:data.premium?'#FFFFFF':c.textSecondary}}>{data.premium?'Premium Member':'Free Plan'}</Text></View>
   </View>
   <ImageBackground source={{uri:hero.image}} resizeMode="cover" imageStyle={{resizeMode:'cover',borderRadius:20}} style={{width:'100%',height:Math.round((windowWidth-32)/3.32),borderRadius:20,overflow:'hidden',backgroundColor:'#1D4735'}}>
-   <View style={{flex:1,justifyContent:'flex-end',padding:14,backgroundColor:'rgba(0,0,0,0.34)'}}>
-    <View style={{marginBottom:10,gap:4}}><Text style={{fontSize:21,fontWeight:'900',color:'#FFFFFF'}}>{hero.title} {hero.year}</Text><Text numberOfLines={2} style={{fontSize:11,fontWeight:'700',color:'#FFFFFF',opacity:.94}}>{hero.description}</Text></View><Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:14,paddingVertical:10,borderRadius:12,flexDirection:'row',alignItems:'center',gap:7,shadowColor:c.amber,shadowOpacity:.3,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:3}}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={15} color="#FFFFFF"/></Pressable>
+   <View style={{flex:1,justifyContent:'flex-end',padding:14,backgroundColor:'rgba(0,0,0,0.08)'}}>
+    <Pressable onPress={()=>router.push('/(tabs)/practice')} accessibilityRole="button" style={({pressed})=>({alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:17,paddingVertical:12,borderRadius:14,flexDirection:'row',alignItems:'center',gap:8,shadowColor:'#000000',shadowOpacity:.22,shadowRadius:10,shadowOffset:{width:0,height:4},elevation:4,transform:[{scale:pressed?.97:1}]})}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={16} color="#FFFFFF"/></Pressable>
    </View>
   </ImageBackground>
   <View style={{flexDirection:'row',gap:8}}>
