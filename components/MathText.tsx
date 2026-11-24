@@ -22,7 +22,7 @@ function legacyPlainText(input:string){
 // rather than delimiter-wrapped TeX. Wrap only unmistakable formula tokens;
 // ordinary prose is left untouched.
 function wrapBareTexCommands(input:string){
- const commands=/\\\\(dfrac|frac|tfrac|binom|sqrt)\\b/g;
+ const commands=/\\(dfrac|frac|tfrac|binom|sqrt)\b/g;
  let output='',last=0,match:RegExpExecArray|null;
  while((match=commands.exec(input))){
   const name=match[1],start=match.index;
