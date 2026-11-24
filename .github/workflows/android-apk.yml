@@ -5,7 +5,7 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening, feat/4.0.0-practice-math-mock]
+    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening, feat/4.0.0-practice-math-mock, build/4.0.0-mathtext-verify]
 permissions:
   contents: write
 jobs:
