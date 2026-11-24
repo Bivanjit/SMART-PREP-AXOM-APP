@@ -63,7 +63,7 @@ export default function Home(){
    </View>
   </ImageBackground>
   <View style={{flexDirection:'row',gap:8}}>
-   <QuickAction icon="book-open-outline" title="Practice" accent="#16845B" onPress={()=>router.push('/(tabs)/practice')}/>
+   <QuickAction icon="book-outline" title="Practice" accent="#16845B" onPress={()=>router.push('/(tabs)/practice')}/>
    <QuickAction icon="clipboard-outline" title="Tests" accent="#D97706" onPress={()=>router.push('/(tabs)/tests')}/>
    <QuickAction icon="document-text-outline" title="PYQs" accent="#3657A7" onPress={()=>router.push('/pyqs')}/>
    <QuickAction icon="play-circle-outline" title="Lectures" accent="#7C3AED" onPress={()=>router.push('/(tabs)/lectures')}/>
