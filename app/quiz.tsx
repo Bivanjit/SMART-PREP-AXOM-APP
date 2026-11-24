@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {ScrollView,Alert,Pressable,Text,View,ActivityIndicator} from 'react-native';
+import {ScrollView,Alert,Pressable,Text,View,ActivityIndicator,AppState} from 'react-native';
 import {router,useLocalSearchParams} from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import {preventScreenCaptureAsync,allowScreenCaptureAsync} from 'expo-screen-capture';
@@ -30,6 +30,7 @@ export default function Quiz(){
   if(live)setDraftReady(true);
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load questions.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[p.testId,p.chapterId,p.durationMinutes,p.questionIds,p.customTest,userId,language]);
  useEffect(()=>{if(!draftReady)return;const payload={answers,current_index:index,visited,started_at:startedAt,deadline_at:deadlineAt,updated_at:new Date().toISOString()};const t=setTimeout(()=>{void AsyncStorage.setItem(sessionKey,JSON.stringify(payload)).catch(e=>console.warn('Local attempt save failed:',e));if(p.testId&&supabase&&userId)void supabase.from('attempt_drafts').upsert({user_id:userId,test_id:p.testId,...payload},{onConflict:'user_id,test_id'}).then(({error})=>{if(error)console.warn('Cloud attempt save failed:',error.message)});},350);return()=>clearTimeout(t)},[answers,index,visited,draftReady,p.testId,userId,startedAt,deadlineAt,sessionKey]);
+ useEffect(()=>{if(!draftReady)return;const subscription=AppState.addEventListener('change',state=>{if(state==='active')return;const payload={answers,current_index:index,visited,started_at:startedAt,deadline_at:deadlineAt,updated_at:new Date().toISOString()};void AsyncStorage.setItem(sessionKey,JSON.stringify(payload)).catch(e=>console.warn('Background draft save failed:',e));if(p.testId&&supabase&&userId)void supabase.from('attempt_drafts').upsert({user_id:userId,test_id:p.testId,...payload},{onConflict:'user_id,test_id'}).then(({error})=>{if(error)console.warn('Background cloud save failed:',error.message)});});return()=>subscription.remove()},[draftReady,answers,index,visited,startedAt,deadlineAt,sessionKey,p.testId,userId]);
  async function chooseAnswer(question:RemoteQuestion,optionIndex:number){
   // First choice is final in untimed practice; exam modes remain editable.
   if(checking||(!isTestMode&&answers[question.id]!==undefined))return;const selected=String.fromCharCode(65+optionIndex);
