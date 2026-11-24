@@ -15,7 +15,6 @@ Deno.serve(async(req:Request)=>{
   const {data:test,error:testError}=await admin.from("mock_tests").select("id,title,status,closes_at,leaderboard_enabled,result_release_mode").eq("id",testId).maybeSingle();
   if(testError||!test)return Response.json({error:"Mock not found."},{status:404,headers:cors});
   if(test.closes_at&&Date.now()<new Date(test.closes_at).getTime())return Response.json({error:"Leaderboard opens after the scheduled mock closes."},{status:409,headers:cors});
-  if(test.result_release_mode==="manual"&&isAdmin!==true)return Response.json({error:"Results have not been released yet."},{status:423,headers:cors});
   if(!test.leaderboard_enabled)return Response.json({error:"Leaderboard is disabled for this mock."},{status:403,headers:cors});
   const {data:attempts,error}=await admin.from("attempts").select("id,user_id,title,score,max_score,elapsed_seconds,submitted_at,results_released_at").eq("mock_test_id",testId).not("submitted_at","is",null).not("results_released_at","is",null).order("score",{ascending:false}).order("elapsed_seconds",{ascending:true}).limit(10);
   if(error)throw error;
