@@ -13,12 +13,10 @@ export default function Results(){
  useEffect(()=>{if(!p.attemptId){try{setResult(JSON.parse(p.result||'{}'));}catch{setResult({});}setLoading(false);return;}
   let active=true;let timer:ReturnType<typeof setInterval>|undefined;
   const load=async()=>{if(!supabase)return;try{
-   const {data:attempt,error:attemptError}=await supabase.from('attempts').select('id,title,score,max_score,correct_count,wrong_count,skipped_count,submitted_at,results_released_at').eq('id',p.attemptId).maybeSingle();
-   if(attemptError)throw attemptError;
-   if(!attempt){if(active){setPending(true);setLoading(false);}return;}
-   const {data:rows,error:answersError}=await supabase.from('attempt_answers').select('question_id,selected_answer,is_correct,marks_awarded,questions(prompt,options,answer_key,explanation)').eq('attempt_id',p.attemptId);
-   if(answersError)throw answersError;
-   if(active){setResult({attempt_id:attempt.id,title:attempt.title,score:attempt.score,max_score:attempt.max_score,correct:attempt.correct_count,wrong:attempt.wrong_count,skipped:attempt.skipped_count,answers:(rows||[]).map((r:any)=>({question_id:r.question_id,selected_answer:r.selected_answer,is_correct:r.is_correct,marks_awarded:r.marks_awarded,prompt:r.questions?.prompt,options:r.questions?.options,correct_answer:r.questions?.answer_key,explanation:r.questions?.explanation}))});setPending(false);setLoading(false);setError('');}
+   const {data,error:resultError}=await supabase.functions.invoke('get-attempt-result',{body:{attempt_id:p.attemptId}});
+   if(resultError)throw resultError;if(data?.error)throw new Error(data.error);
+   if(data?.locked){if(active){setPending(true);setLoading(false);}return;}
+   if(active){setResult(data);setPending(false);setLoading(false);setError('');}
   }catch(e){if(active){setError(e instanceof Error?e.message:'Could not load your result.');setLoading(false);}}};
   void load();timer=setInterval(()=>void load(),8000);return()=>{active=false;if(timer)clearInterval(timer)};
  },[p.attemptId,p.result]);
