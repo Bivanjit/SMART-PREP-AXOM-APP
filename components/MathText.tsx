@@ -14,14 +14,14 @@ function legacyToTex(input:string){
  }
  s=out;
  // TeX powers support numeric and alphabetic exponents: x^2, G^x, c^y, h^z.
- s=s.replace(/([A-Za-z0-9)\\]])\\s*\\^\\s*(?:\\{([^{}]+)\\}|([A-Za-z]|-?\\d+))/g,(_m,base,group,single)=>'\\('+base+'^{'+(group||single)+'}\\)');
+ s=s.replace(/([A-Za-z0-9)\]])\s*\^\s*(?:\{([^{}]+)\}|([A-Za-z]|-?\d+))/g,(_m,base,group,single)=>'\\('+base+'^{'+(group||single)+'}\\)');
  // Render roots in the common legacy form √(expression).
- s=s.replace(/√\\s*\\(([^()]+)\\)/g,(_m,body)=>'\\(\\sqrt{'+body+'}\\)');
+ s=s.replace(/√\s*\(([^()]+)\)/g,(_m,body)=>'\\(\\sqrt{'+body+'}\\)');
  // Render simple legacy x/y fractions as stacked fractions when both sides are grouped.
- s=s.replace(/\\(([^()]+)\\)\\s*\\/\\s*\\(([^()]+)\\)/g,(_m,n,d)=>'\\(\\dfrac{'+n+'}{'+d+'}\\)');
+ s=s.replace(/\(([^()]+)\)\s*\/\s*\(([^()]+)\)/g,(_m,n,d)=>'\\(\\dfrac{'+n+'}{'+d+'}\\)');
  // Normalize comparison operators and common chemical charge notation.
- s=s.replace(/\\s*<=\\s*/g,' ≤ ').replace(/\\s*>=\\s*/g,' ≥ ');
- s=s.replace(/\\b([A-Z][a-z]?\\d*)([+-])\\b/g,'$1^{\\text{$2}}');
+ s=s.replace(/\s*<=\s*/g,' ≤ ').replace(/\s*>=\s*/g,' ≥ ');
+ s=s.replace(/\b([A-Z][a-z]?\d*)([+-])\b/g,'$1^{\\text{$2}}');
  return s;
 }
 function escapeHtml(value:string){return value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');}
