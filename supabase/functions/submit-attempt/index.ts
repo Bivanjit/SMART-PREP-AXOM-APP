@@ -59,6 +59,9 @@ Deno.serve(async (req: Request) => {
       const earlyAllowed = test.allow_early_submission === true;
       if (test.closes_at && now < new Date(test.closes_at).getTime() && !earlyAllowed) {
         if (!autoSubmitted) return Response.json({ error: "Submission is locked until the scheduled mock closes." }, { status: 409, headers: cors });
+        const { data: activeDraft, error: draftError } = await admin.from("attempt_drafts").select("user_id,updated_at").eq("user_id", user.id).eq("test_id", testId).maybeSingle();
+        if (draftError) throw draftError;
+        if (!activeDraft || (activeDraft.updated_at && now - new Date(activeDraft.updated_at).getTime() > 30 * 60 * 1000)) return Response.json({ error: "Auto-submit requires a recently active mock attempt." }, { status: 409, headers: cors });
         const { data: lastBackground } = await admin.from("mock_test_events").select("occurred_at").eq("test_id", testId).eq("user_id", user.id).in("event_type", ["app_background","focus_lost"]).order("occurred_at", { ascending: false }).limit(1).maybeSingle();
         const { data: lastForeground } = await admin.from("mock_test_events").select("occurred_at").eq("test_id", testId).eq("user_id", user.id).in("event_type", ["app_foreground","focus_restored"]).order("occurred_at", { ascending: false }).limit(1).maybeSingle();
         const backgroundMs = lastBackground ? new Date(lastBackground.occurred_at).getTime() : 0;
@@ -66,7 +69,7 @@ Deno.serve(async (req: Request) => {
         if (!backgroundMs || foregroundMs > backgroundMs || now - backgroundMs < 15000) return Response.json({ error: "Auto-submit requires a verified app-background interval longer than 15 seconds." }, { status: 409, headers: cors });
       }
       if (test.closes_at && now >= new Date(test.closes_at).getTime() && !autoSubmitted) body.auto_submitted = true;
-      manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual" && (!test.closes_at || now < new Date(test.closes_at).getTime());
+      manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
       if (test.access_tier === "premium") {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
