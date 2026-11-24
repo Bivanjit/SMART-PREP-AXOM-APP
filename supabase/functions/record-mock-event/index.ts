@@ -17,6 +17,8 @@ Deno.serve(async(req:Request)=>{
   if(!test.anti_cheat_enabled)return Response.json({recorded:false},{headers:cors});
   const {error:insertError}=await admin.from("mock_test_events").insert({attempt_id:null,test_id:testId,user_id:user.id,event_type:event,occurred_at:new Date().toISOString(),details:{client_reported:true}});
   if(insertError)throw insertError;
+  const {error:auditError}=await admin.from("security_events").insert({user_id:user.id,event_type:"mock_"+event,severity:event==="app_background"||event==="focus_lost"?"warning":"info",source:"mobile_app",details:{test_id:testId,server_recorded_at:new Date().toISOString()}});
+  if(auditError)console.warn("Mock event audit mirror failed:",auditError.message);
   return Response.json({recorded:true},{headers:cors});
  }catch(e){console.error("record-mock-event",e);return Response.json({error:e instanceof Error?e.message:"Could not record mock event."},{status:500,headers:cors});}
 });
