@@ -54,11 +54,11 @@ function wrapBareTexCommands(input:string){
 function wrapBareMathPlain(input:string){
  // Isotope notation is commonly entered as ^{200}X. TeX requires an empty base
  // before a leading superscript, so make the mass number + element explicit.
- let s=input.replace(/\\^\\{(\\d+)\\}([A-Z][a-z]?)/g,(_m,mass,element)=>'\\\\({}^{'+mass+'}\\\\mathrm{'+element+'}\\\\)');
+ let s=input.replace(/\^\{(\d+)\}([A-Z][a-z]?)/g,(_m,mass,element)=>'\\({}^{'+mass+'}\\mathrm{'+element+'}\\)');
  // Absolute-value expressions are frequent in algebra questions. Keep the bars
  // paired and move any attached power inside the same MathJax expression.
- s=s.replace(/\\|([^|\\n]+)\\|\\s*\\^\\{([^{}]+)\\}/g,(_m,body,power)=>'\\\\(\\\\left|'+body.trim()+'\\\\right|^{'+power+'}\\\\)');
- s=s.replace(/\\|([^|\\n]+)\\|/g,(_m,body)=>/[A-Za-z0-9]|[+*/=<>-]/.test(body)?'\\\\(\\\\left|'+body.trim()+'\\\\right|\\\\)':_m);
+ s=s.replace(/\|([^|\n]+)\|\s*\^\{([^{}]+)\}/g,(_m,body,power)=>'\\(\\left|'+body.trim()+'\\right|^{'+power+'}\\)');
+ s=s.replace(/\|([^|\n]+)\|/g,(_m,body)=>/[A-Za-z0-9]|[+*/=<>-]/.test(body)?'\\(\\left|'+body.trim()+'\\right|\\)':_m);
  s=wrapBareTexCommands(s);
  // Wrap complete polynomial/rational inequalities as one expression when they end in a comparison.
  s=s.replace(/([\s\S]*?)(\({1,2}[A-Za-z0-9(][A-Za-z0-9\s{}^_()+\-*/.]*?(?:<=|>=|=|<|>)\s*-?\d+(?:\.\d+)?)$/g,(_m,prefix,expr)=>{const balanced=expr.split('(').length===expr.split(')').length&&expr.split('{').length===expr.split('}').length;return balanced?prefix+'\\('+expr+'\\)':prefix+expr;});
