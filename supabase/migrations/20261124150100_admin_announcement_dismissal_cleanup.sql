@@ -1,0 +1,5 @@
+drop policy if exists user_announcement_dismissals_admin_delete on public.user_announcement_dismissals;
+create policy user_announcement_dismissals_admin_delete
+on public.user_announcement_dismissals
+for delete to authenticated
+using (public.is_smartprep_admin());
