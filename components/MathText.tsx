@@ -21,9 +21,16 @@ function legacyPlainText(input:string){
 // Question-bank records often contain bare TeX (for example CH_{2}O or M^{-1})
 // rather than delimiter-wrapped TeX. Wrap only unmistakable formula tokens;
 // ordinary prose is left untouched.
-function wrapBareMath(input:string){
+function wrapBareMathPlain(input:string){
  let s=input.replace(/\\(?:sqrt|frac|dfrac)\{(?:[^{}]|\{[^{}]*\})*\}/g,m=>'\\('+m+'\\)');
- return s.replace(/[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+(?:\s+[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+)*/g,m=>'\\('+m+'\\)');
+ // Wrap complete polynomial/rational inequalities as one expression when they end in a comparison.
+ s=s.replace(/(\({1,2}[A-Za-z0-9(][A-Za-z0-9\s{}^_()+\-*/.]*?(?:<=|>=|=|<|>)\s*-?\d+(?:\.\d+)?)$/g,(_m,expr)=>'\\('+expr+'\\)');
+ const parts=s.split(/(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?:\\\\.|[^$])*\$)/g);
+ return parts.map(part=>/^(?:\\\[|\\\(|\$\$|\$)/.test(part)?part:part.replace(/[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+(?:\s+[A-Za-z0-9]+(?:[_^]\{[^{}]+\}[A-Za-z0-9]*)+)*/g,m=>'\\('+m+'\\)')).join('');
+}
+function wrapBareMath(input:string){
+ const parts=input.split(/(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?:\\\\.|[^$])*\$)/g);
+ return parts.map(part=>/^(?:\\\[|\\\(|\$\$|\$)/.test(part)?part:wrapBareMathPlain(part)).join('');
 }
 function convertOutsideMath(input:string){
  const parts=input.split(/(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$(?:\\\\.|[^$])*\$)/g);
