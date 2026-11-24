@@ -45,9 +45,15 @@ Deno.serve(async (req: Request) => {
     let rules = new Map<string, { answer_key: string; explanation: string | null; marks: number; negative: number }>();
 
     if (testId) {
-      const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status,test_type,result_release_mode").eq("id", testId).maybeSingle();
+      const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status,test_type,result_release_mode,opens_at,closes_at,allow_early_submission").eq("id", testId).maybeSingle();
       if (testError || !test || test.status !== "published") return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
       title = test.title;
+      const now = Date.now();
+      if (test.opens_at && now < new Date(test.opens_at).getTime()) return Response.json({ error: "This mock has not opened yet." }, { status: 409, headers: cors });
+      const autoSubmitted = body.auto_submitted === true;
+      const earlyAllowed = test.allow_early_submission === true;
+      if (test.closes_at && now < new Date(test.closes_at).getTime() && !earlyAllowed && !autoSubmitted) return Response.json({ error: "Submission is locked until the scheduled mock closes." }, { status: 409, headers: cors });
+      if (test.closes_at && now >= new Date(test.closes_at).getTime() && !autoSubmitted) body.auto_submitted = true;
       manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
       if (test.access_tier === "premium") {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
@@ -153,6 +159,9 @@ Deno.serve(async (req: Request) => {
       user_id: user.id, mock_test_id: testId, source, title,
       score, max_score: maxScore, correct_count: correct, wrong_count: wrong,
       skipped_count: skipped, submitted_at: new Date().toISOString(),
+      elapsed_seconds: Math.max(0, Math.min(86400, Number(body.elapsed_seconds) || 0)),
+      auto_submitted: body.auto_submitted === true,
+      violation_count: Math.max(0, Math.min(1000, Number(body.violation_count) || 0)),
       results_released_at: (testId && manualRelease) ? null : new Date().toISOString()
     }).select("id").single();
     if (attemptError || !attempt) throw attemptError || new Error("Could not save attempt");
@@ -163,6 +172,7 @@ Deno.serve(async (req: Request) => {
       throw answerError;
     }
 
+    if (body.violation_count > 0 || body.auto_submitted === true) { await admin.from('mock_test_events').insert([{attempt_id:attempt.id,user_id:user.id,event_type:body.auto_submitted===true?'auto_submit':'manual_submit',details:{elapsed_seconds:body.elapsed_seconds||0,violation_count:body.violation_count||0}}]); }
     if (manualRelease) { return Response.json({ attempt_id: attempt.id, pending_release: true, title, message: "Your submission is saved. Results will appear after admin review and release." }, { headers: cors }); }
 
     const { data: xpRows } = await admin.from("question_xp_ledger").select("xp").eq("attempt_id", attempt.id);
