@@ -41,13 +41,14 @@ Deno.serve(async (req: Request) => {
     let title = typeof body.title === "string" ? body.title.slice(0, 120) : "Chapter Practice";
     let source: "mock_test" | "chapter_practice" | "previous_year" | "custom_test" = testId ? "mock_test" : pyqPaperId ? "previous_year" : body.custom_test === true ? "custom_test" : "chapter_practice";
     let maxScore = 0;
+    let manualRelease = false;
     let rules = new Map<string, { answer_key: string; explanation: string | null; marks: number; negative: number }>();
 
     if (testId) {
       const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status,test_type,result_release_mode").eq("id", testId).maybeSingle();
       if (testError || !test || test.status !== "published") return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
       title = test.title;
-      const manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
+      manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
       if (test.access_tier === "premium") {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
@@ -162,7 +163,7 @@ Deno.serve(async (req: Request) => {
       throw answerError;
     }
 
-    if (testId) { const { data: testMode } = await admin.from("mock_tests").select("test_type,result_release_mode").eq("id", testId).maybeSingle(); if (testMode?.test_type === "full_length" && testMode.result_release_mode === "manual") { return Response.json({ attempt_id: attempt.id, pending_release: true, title, message: "Your submission is saved. Results will appear after admin review and release." }, { headers: cors }); } }
+    if (manualRelease) { return Response.json({ attempt_id: attempt.id, pending_release: true, title, message: "Your submission is saved. Results will appear after admin review and release." }, { headers: cors }); } }
 
     const { data: xpRows } = await admin.from("question_xp_ledger").select("xp").eq("attempt_id", attempt.id);
     const xpAwarded = (xpRows || []).reduce((sum: number, row: any) => sum + Number(row.xp || 0), 0);
