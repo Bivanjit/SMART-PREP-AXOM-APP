@@ -69,7 +69,7 @@ begin
       d.started_at,now(),greatest(0,least(86400,extract(epoch from (least(now(),d.closes_at)-d.started_at))::integer)),
       true,
       (select count(*)::integer from public.mock_test_events e where e.user_id=d.user_id and e.test_id=d.test_id and e.event_type='app_background'),
-      case when d.result_release_mode='manual' then null else now() end
+      now()
     ) returning id into new_attempt_id;
 
     insert into public.attempt_answers(attempt_id,question_id,selected_answer,is_correct,marks_awarded)
