@@ -48,7 +48,7 @@ export default function TabsLayout(){
      {item('stats-chart-outline','Learning Insights','/(tabs)/insights')}
      {item('chatbubbles-outline','Customer Support','/support')}
      {item('star-outline','Reviews & Ratings','/reviews')}
-     {item('people-outline','Community · Coming Soon','/community')}
+     {item('people-outline','Community','/community')}
      {item('trophy-outline','Leaderboard & Leagues','/leaderboard')}
      <Text style={{fontSize:11,fontWeight:'800',letterSpacing:1,color:c.textMuted,marginTop:22,marginBottom:5}}>ACCOUNT & MORE</Text>
      {item('person-circle-outline','Profile & Account','/(tabs)/profile')}
