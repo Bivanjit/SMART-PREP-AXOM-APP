@@ -20,8 +20,7 @@ function SectionTitle({title,action,onPress}:{title:string;action?:string;onPres
 export default function Home(){
  const {c,userEmail,userId,bookmarks,language}=useTheme();const {width:windowWidth}=useWindowDimensions();
  const [data,setData]=useState<HomeData>({name:'Student',avatar:null,premium:false,attempts:0,publishedQuestions:0,attemptedQuestions:0,weeklyXp:0,unread:0,saved:bookmarks.length,latestLecture:null});
- const [loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false),[refreshKey,setRefreshKey]=useState(0),[premiumDismissed,setPremiumDismissed]=useState(false);const [downloadCount,setDownloadCount]=useState<number|null>(null);const [hero,setHero]=useState({title:'Assam CEE',year:'2027',description:'Complete preparation for Physics, Chemistry & Mathematics.',image:assamHero});
- useEffect(()=>{let live=true;fetch("https://smart-axom-prep.vercel.app/api/download-stats").then(r=>r.ok?r.json():null).then(d=>{if(live&&typeof d?.downloads==="number")setDownloadCount(d.downloads)}).catch(()=>{});return()=>{live=false}},[]);
+ const [loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false),[refreshKey,setRefreshKey]=useState(0),[premiumDismissed,setPremiumDismissed]=useState(false);const [hero,setHero]=useState({title:'Assam CEE',year:'2027',description:'Complete preparation for Physics, Chemistry & Mathematics.',image:assamHero});
  useEffect(()=>{let live=true;void AsyncStorage.getItem('smartprep.premium.dismissed').then(v=>{if(live)setPremiumDismissed(v==='true')}).catch(()=>{});return()=>{live=false}},[]);
  useEffect(()=>{let live=true;void(async()=>{
   if(!supabase){setLoading(false);return;}
@@ -59,8 +58,8 @@ export default function Home(){
    <View style={{backgroundColor:data.premium?c.amber:c.surfaceElevated,paddingHorizontal:10,paddingVertical:6,borderRadius:99}}><Text style={{fontSize:10,fontWeight:'900',color:data.premium?'#FFFFFF':c.textSecondary}}>{data.premium?'Premium Member':'Free Plan'}</Text></View>
   </View>
   <ImageBackground source={{uri:hero.image}} resizeMode="cover" imageStyle={{resizeMode:'cover',borderRadius:20}} style={{width:'100%',height:Math.round((windowWidth-32)/3.32),borderRadius:20,overflow:'hidden',backgroundColor:'#1D4735'}}>
-   <View style={{flex:1,justifyContent:'flex-end',padding:12,backgroundColor:'transparent'}}>
-    <Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:14,paddingVertical:10,borderRadius:12,flexDirection:'row',alignItems:'center',gap:7,shadowColor:c.amber,shadowOpacity:.3,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:3}}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={15} color="#FFFFFF"/></Pressable>
+   <View style={{flex:1,justifyContent:'flex-end',padding:14,backgroundColor:'rgba(0,0,0,0.34)'}}>
+    <View style={{marginBottom:10,gap:4}}><Text style={{fontSize:21,fontWeight:'900',color:'#FFFFFF'}}>{hero.title} {hero.year}</Text><Text numberOfLines={2} style={{fontSize:11,fontWeight:'700',color:'#FFFFFF',opacity:.94}}>{hero.description}</Text></View><Pressable onPress={()=>router.push('/(tabs)/practice')} style={{alignSelf:'flex-start',backgroundColor:c.amber,paddingHorizontal:14,paddingVertical:10,borderRadius:12,flexDirection:'row',alignItems:'center',gap:7,shadowColor:c.amber,shadowOpacity:.3,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:3}}><Text style={{fontSize:12,fontWeight:'900',color:'#FFFFFF'}}>Start Practising</Text><Ionicons name="arrow-forward" size={15} color="#FFFFFF"/></Pressable>
    </View>
   </ImageBackground>
   <View style={{flexDirection:'row',gap:8}}>
@@ -98,7 +97,6 @@ export default function Home(){
    <Pressable onPress={()=>router.push('/reviews')} style={{flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7}}><Ionicons name="star-outline" size={21} color={c.amber}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Rate SmartPrep</Text><Text style={{fontSize:10,color:c.textSecondary}}>Share your review</Text></Pressable>
    <Pressable onPress={()=>router.push('/community')} style={{flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7}}><Ionicons name="chatbubbles-outline" size={21} color={c.green}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Community</Text><Text style={{fontSize:10,color:c.textSecondary}}>Coming soon</Text></Pressable>
   </View>
-  {downloadCount!==null?<Text style={{fontSize:10,color:c.textMuted,textAlign:'center'}}>{downloadCount.toLocaleString()} APK downloads · GitHub release downloads, not unique installs</Text>:null}
   {loading?<ActivityIndicator color={c.green}/>:null}
   <View style={{flexDirection:'row',justifyContent:'space-between',gap:12}}><View style={{flex:1,gap:3}}><Text style={{fontSize:10,color:c.textMuted,fontWeight:'800'}}>TESTS ATTEMPTED</Text><Text style={{fontSize:19,color:c.text,fontWeight:'900'}}>{data.attempts}</Text></View><View style={{flex:1,gap:3}}><Text style={{fontSize:10,color:c.textMuted,fontWeight:'800'}}>WEEKLY XP</Text><Text style={{fontSize:19,color:c.text,fontWeight:'900'}}>{data.weeklyXp}</Text></View></View>
  </ScrollView>;
