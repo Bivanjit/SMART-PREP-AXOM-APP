@@ -2,13 +2,12 @@ import React,{useEffect,useState} from 'react';
 import {ScrollView,View,Text,Pressable,ActivityIndicator,Image} from 'react-native';
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import {supabase} from '../../lib/supabase';
 import {useTheme} from '../_layout';
 import {Heading,Copy,Panel,Button} from '../../components/ui';
 import {tr} from '../../lib/i18n';
 type Lecture={id:string;title:string;subject:string;video_url:string;description:string|null};
-function Shortcut({icon,label,detail,onPress}:{icon:keyof typeof Ionicons.glyphMap;label:string;detail:string;onPress:()=>void}){const {c}=useTheme();return <Pressable onPress={()=>{void Haptics.selectionAsync();onPress()}} style={({pressed})=>({width:'48.2%',minHeight:112,backgroundColor:c.card,borderRadius:18,borderWidth:1,borderColor:c.border,padding:14,gap:8,opacity:pressed?.9:1,transform:[{scale:pressed?.975:1}]})}><View style={{width:38,height:38,borderRadius:12,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={21} color={c.blue}/></View><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>{label}</Text><Text style={{fontSize:11,color:c.muted}}>{detail}</Text></Pressable>}
+function Shortcut({icon,label,detail,onPress}:{icon:keyof typeof Ionicons.glyphMap;label:string;detail:string;onPress:()=>void}){const {c}=useTheme();return <Pressable onPress={onPress} style={({pressed})=>({width:'48.2%',minHeight:112,backgroundColor:c.card,borderRadius:18,borderWidth:1,borderColor:c.border,padding:14,gap:8,opacity:pressed?.72:1})}><View style={{width:38,height:38,borderRadius:12,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name={icon} size={21} color={c.blue}/></View><Text style={{fontSize:14,fontWeight:'900',color:c.text}}>{label}</Text><Text style={{fontSize:11,color:c.muted}}>{detail}</Text></Pressable>}
 export default function Home(){
  const {c,userEmail,userId,bookmarks,language}=useTheme();const [lecture,setLecture]=useState<Lecture|null>(null);const [count,setCount]=useState(0);const [loading,setLoading]=useState(true);
  useEffect(()=>{let live=true;void(async()=>{if(!supabase){setLoading(false);return;}try{const {data:lec}=await supabase.from('lectures').select('id,title,subject,video_url,description').eq('is_published',true).order('lecture_order').limit(1).maybeSingle();if(live)setLecture(lec as Lecture|null);if(userId){const {count:total}=await supabase.from('attempts').select('id',{count:'exact',head:true}).eq('user_id',userId);if(live)setCount(total||0)}}catch(e){console.warn('Dashboard load failed',e)}finally{if(live)setLoading(false)}})();return()=>{live=false}},[userId]);
