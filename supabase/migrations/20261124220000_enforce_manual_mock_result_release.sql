@@ -8,12 +8,7 @@ where result_release_mode is distinct from case when test_type = 'full_length' t
 
 update public.attempts
 set results_released_at = coalesce(submitted_at, created_at)
-where results_released_at is null
-  and (mock_test_id is null or exists (
-    select 1 from public.mock_tests mt
-    where mt.id = attempts.mock_test_id
-      and (mt.test_type <> 'full_length' or mt.result_release_mode <> 'manual')
-  ));
+where results_released_at is null;
 
 drop policy if exists attempts_select_own on public.attempts;
 create policy attempts_select_own
