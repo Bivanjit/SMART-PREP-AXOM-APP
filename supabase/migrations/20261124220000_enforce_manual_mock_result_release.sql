@@ -53,6 +53,7 @@ create index if not exists attempts_manual_release_queue_idx
 
 -- Question answer keys and explanations are not selectable through the public Data API.
 -- Trusted Edge Functions use the service-role client; admin editing reads through admin_get_questions().
+revoke select (answer_key, explanation) on table public.questions from anon, authenticated;
 revoke select on table public.questions from anon, authenticated;
 grant select (
   id, chapter_id, prompt, options, access_tier, is_published, language, difficulty,
