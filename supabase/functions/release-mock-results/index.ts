@@ -34,20 +34,27 @@ Deno.serve(async (req: Request) => {
     if (!test || test.test_type !== "full_length" || test.result_release_mode !== "manual") {
       return Response.json({ error: "Only full-length mock results use manual release." }, { status: 400, headers: cors });
     }
-    if (attempt.results_released_at) return Response.json({ released: true, already_released: true }, { headers: cors });
-    const releasedAt = new Date().toISOString();
-    const { data: updated, error: updateError } = await admin.from("attempts")
-      .update({ results_released_at: releasedAt }).eq("id", attemptId).is("results_released_at", null).select("id").maybeSingle();
-    if (updateError) throw updateError;
-    if (!updated) return Response.json({ error: "Result was already released or could not be updated." }, { status: 409, headers: cors });
-    const { error: notificationError } = await admin.from("user_notifications").insert({
+    const releasedAt = attempt.results_released_at || new Date().toISOString();
+    if (!attempt.results_released_at) {
+      const { data: updated, error: updateError } = await admin.from("attempts")
+        .update({ results_released_at: releasedAt }).eq("id", attemptId).is("results_released_at", null).select("id").maybeSingle();
+      if (updateError) throw updateError;
+      if (!updated) return Response.json({ error: "Result was released concurrently. Retry to verify its notification." }, { status: 409, headers: cors });
+    }
+    // Use the production-supported notification category and repair a missed notification on retry.
+    const actionPath = "/results?attemptId=" + attemptId;
+    const { data: existingNotification, error: existingError } = await admin.from("user_notifications").select("id").eq("user_id", attempt.user_id).eq("action_path", actionPath).maybeSingle();
+    if (existingError) throw existingError;
+    if (!existingNotification) {
+      const { error: notificationError } = await admin.from("user_notifications").insert({
       user_id: attempt.user_id,
-      category: "exam",
+      category: "system",
       title: "Your mock test result is ready",
       body: "Your " + test.title + " result has been reviewed and released. Tap to view your score and explanations.",
-      action_path: "/results?attemptId=" + attemptId
-    });
-    if (notificationError) throw notificationError;
+      action_path: actionPath
+      });
+      if (notificationError) throw notificationError;
+    }
     return Response.json({ released: true, attempt_id: attemptId, released_at: releasedAt }, { headers: cors });
   } catch (error) {
     console.error("release-mock-results", error);
