@@ -1,11 +1,11 @@
-name: Build SmartPrep Axom V3 Complete Redesign Release APK
+name: Build SmartPrep Axom V4.0.0 Release APK
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 on:
   workflow_dispatch:
   push:
-    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening]
+    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening, feat/4.0.0-practice-math-mock]
 permissions:
   contents: write
 jobs:
@@ -87,7 +87,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: smartprep-axom-v3-complete-redesign-release
+          name: smartprep-axom-v4.0.0-release
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
