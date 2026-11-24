@@ -63,10 +63,10 @@ export default function Home(){
    </View>
   </ImageBackground>
   <View style={{flexDirection:'row',gap:8}}>
-   <QuickAction icon="book-outline" title="Practice" onPress={()=>router.push('/(tabs)/practice')}/>
-   <QuickAction icon="clipboard-outline" title="Tests" onPress={()=>router.push('/(tabs)/tests')}/>
-   <QuickAction icon="document-text-outline" title="PYQs" onPress={()=>router.push('/pyqs')}/>
-   <QuickAction icon="play-outline" title="Lectures" onPress={()=>router.push('/(tabs)/lectures')}/>
+   <QuickAction icon="book-open-outline" title="Practice" accent="#16845B" onPress={()=>router.push('/(tabs)/practice')}/>
+   <QuickAction icon="clipboard-outline" title="Tests" accent="#D97706" onPress={()=>router.push('/(tabs)/tests')}/>
+   <QuickAction icon="document-text-outline" title="PYQs" accent="#3657A7" onPress={()=>router.push('/pyqs')}/>
+   <QuickAction icon="play-circle-outline" title="Lectures" accent="#7C3AED" onPress={()=>router.push('/(tabs)/lectures')}/>
   </View>
   {!data.premium&&!premiumDismissed?<Pressable onPress={()=>router.push('/premium')} style={{backgroundColor:c.surfaceElevated,borderWidth:1,borderColor:'#E9C77D',borderRadius:17,padding:14,flexDirection:'row',alignItems:'center',gap:12,shadowColor:c.amber,shadowOpacity:.2,shadowRadius:12,shadowOffset:{width:0,height:4},elevation:4}}>
    <View style={{width:42,height:42,borderRadius:14,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy" size={22} color="#A16207"/></View>
