@@ -5,7 +5,7 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening, feat/4.0.0-practice-math-mock, build/4.0.0-mathtext-verify]
+    branches: [release/v3.5.4-fcm-notifications, release/v3.6.0, build/v3.6.0-profile-fixes-preview, feat/final-release-hardening, feat/4.0.0-practice-math-mock, build/4.0.0-mathtext-verify, release/v4.0.0]
 permissions:
   contents: write
 jobs:
@@ -66,7 +66,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
       - name: Publish permanent GitHub Release
-        if: github.ref == 'refs/heads/release/v3.5.4-fcm-notifications' || github.ref == 'refs/heads/release/v3.6.0'
+        if: github.ref == 'refs/heads/release/v3.5.4-fcm-notifications' || github.ref == 'refs/heads/release/v3.6.0' || github.ref == 'refs/heads/release/v4.0.0'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
