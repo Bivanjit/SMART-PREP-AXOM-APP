@@ -1,0 +1,1 @@
+create unique index if not exists attempts_one_submission_per_mock_user on public.attempts(user_id,mock_test_id) where mock_test_id is not null and submitted_at is not null;

@@ -41,12 +41,35 @@ Deno.serve(async (req: Request) => {
     let title = typeof body.title === "string" ? body.title.slice(0, 120) : "Chapter Practice";
     let source: "mock_test" | "chapter_practice" | "previous_year" | "custom_test" = testId ? "mock_test" : pyqPaperId ? "previous_year" : body.custom_test === true ? "custom_test" : "chapter_practice";
     let maxScore = 0;
+    let manualRelease = false;
     let rules = new Map<string, { answer_key: string; explanation: string | null; marks: number; negative: number }>();
 
     if (testId) {
-      const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status").eq("id", testId).maybeSingle();
-      if (testError || !test || test.status !== "published") return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
+      const { data: test, error: testError } = await admin.from("mock_tests").select("id,title,total_marks,access_tier,status,test_type,result_release_mode,opens_at,closes_at,allow_early_submission").eq("id", testId).maybeSingle();
+      if (testError || !test || !["published","scheduled","completed"].includes(test.status)) return Response.json({ error: "Test is unavailable." }, { status: 404, headers: cors });
       title = test.title;
+      if (user) {
+        const { data: priorAttempt, error: priorError } = await admin.from("attempts").select("id,results_released_at").eq("user_id", user.id).eq("mock_test_id", testId).not("submitted_at", "is", null).order("submitted_at", { ascending: false }).limit(1).maybeSingle();
+        if (priorError) throw priorError;
+        if (priorAttempt) return Response.json({ attempt_id: priorAttempt.id, pending_release: !priorAttempt.results_released_at, title, message: "This mock submission has already been recorded." }, { headers: cors });
+      }
+      const now = Date.now();
+      if (test.opens_at && now < new Date(test.opens_at).getTime()) return Response.json({ error: "This mock has not opened yet." }, { status: 409, headers: cors });
+      const autoSubmitted = body.auto_submitted === true;
+      const earlyAllowed = test.allow_early_submission === true;
+      if (test.closes_at && now < new Date(test.closes_at).getTime() && !earlyAllowed) {
+        if (!autoSubmitted) return Response.json({ error: "Submission is locked until the scheduled mock closes." }, { status: 409, headers: cors });
+        const { data: activeDraft, error: draftError } = await admin.from("attempt_drafts").select("user_id,updated_at").eq("user_id", user.id).eq("test_id", testId).maybeSingle();
+        if (draftError) throw draftError;
+        if (!activeDraft || (activeDraft.updated_at && now - new Date(activeDraft.updated_at).getTime() > 30 * 60 * 1000)) return Response.json({ error: "Auto-submit requires a recently active mock attempt." }, { status: 409, headers: cors });
+        const { data: lastBackground } = await admin.from("mock_test_events").select("occurred_at").eq("test_id", testId).eq("user_id", user.id).in("event_type", ["app_background","focus_lost"]).order("occurred_at", { ascending: false }).limit(1).maybeSingle();
+        const { data: lastForeground } = await admin.from("mock_test_events").select("occurred_at").eq("test_id", testId).eq("user_id", user.id).in("event_type", ["app_foreground","focus_restored"]).order("occurred_at", { ascending: false }).limit(1).maybeSingle();
+        const backgroundMs = lastBackground ? new Date(lastBackground.occurred_at).getTime() : 0;
+        const foregroundMs = lastForeground ? new Date(lastForeground.occurred_at).getTime() : 0;
+        if (!backgroundMs || foregroundMs > backgroundMs || now - backgroundMs < 15000) return Response.json({ error: "Auto-submit requires a verified app-background interval longer than 15 seconds." }, { status: 409, headers: cors });
+      }
+      if (test.closes_at && now >= new Date(test.closes_at).getTime() && !autoSubmitted) body.auto_submitted = true;
+      manualRelease = test.test_type === "full_length" && test.result_release_mode === "manual";
       if (test.access_tier === "premium") {
         const { data: membership } = await admin.from("memberships").select("id").eq("user_id", user.id).eq("status", "active").lte("starts_at", new Date().toISOString()).gt("expires_at", new Date().toISOString()).in("product_code", ["cee_complete"]).limit(1).maybeSingle();
         if (!membership) return Response.json({ error: "An active CEE Complete membership is required." }, { status: 403, headers: cors });
@@ -150,15 +173,33 @@ Deno.serve(async (req: Request) => {
     const { data: attempt, error: attemptError } = await admin.from("attempts").insert({
       user_id: user.id, mock_test_id: testId, source, title,
       score, max_score: maxScore, correct_count: correct, wrong_count: wrong,
-      skipped_count: skipped, submitted_at: new Date().toISOString()
+      skipped_count: skipped, submitted_at: new Date().toISOString(),
+      elapsed_seconds: Math.max(0, Math.min(86400, Number(body.elapsed_seconds) || 0)),
+      auto_submitted: body.auto_submitted === true,
+      violation_count: Math.max(0, Math.min(1000, Number(body.violation_count) || 0)),
+      results_released_at: (testId && manualRelease) ? null : new Date().toISOString()
     }).select("id").single();
-    if (attemptError || !attempt) throw attemptError || new Error("Could not save attempt");
+    if (attemptError || !attempt) {
+      if (attemptError?.code === "23505" && testId) {
+        const { data: existing } = await admin.from("attempts").select("id,results_released_at")
+          .eq("user_id", user.id).eq("mock_test_id", testId).not("submitted_at", "is", null)
+          .order("submitted_at", { ascending: false }).limit(1).maybeSingle();
+        if (existing) return Response.json({
+          attempt_id: existing.id, pending_release: !existing.results_released_at, title,
+          message: "This mock submission has already been recorded."
+        }, { headers: cors });
+      }
+      throw attemptError || new Error("Could not save attempt");
+    }
 
     const { error: answerError } = await admin.from("attempt_answers").insert(answerRows.map(row => ({ ...row, attempt_id: attempt.id })));
     if (answerError) {
       await admin.from("attempts").delete().eq("id", attempt.id);
       throw answerError;
     }
+
+    if (body.violation_count > 0 || body.auto_submitted === true) { await admin.from('mock_test_events').insert([{attempt_id:attempt.id,user_id:user.id,event_type:body.auto_submitted===true?'auto_submit':'manual_submit',details:{elapsed_seconds:body.elapsed_seconds||0,violation_count:body.violation_count||0}}]); }
+    if (manualRelease) { return Response.json({ attempt_id: attempt.id, pending_release: true, title, message: "Your submission is saved. Results will appear after admin review and release." }, { headers: cors }); }
 
     const { data: xpRows } = await admin.from("question_xp_ledger").select("xp").eq("attempt_id", attempt.id);
     const xpAwarded = (xpRows || []).reduce((sum: number, row: any) => sum + Number(row.xp || 0), 0);
