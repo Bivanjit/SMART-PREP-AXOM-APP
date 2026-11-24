@@ -85,17 +85,17 @@ export default function Home(){
     <Pressable onPress={()=>{void Haptics.selectionAsync();data.latestLecture?router.push({pathname:'/lecture-player',params:{lectureId:data.latestLecture.id,title:data.latestLecture.title}}):router.push('/(tabs)/lectures')}} style={({pressed})=>({flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:15,padding:14,gap:9,opacity:pressed?.88:1,transform:[{scale:pressed?.985:1}]})}>
      <Ionicons name="play-circle-outline" size={23} color={c.green}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Continue Learning</Text><Text numberOfLines={2} style={{fontSize:10,color:c.textSecondary}}>{data.latestLecture?.title||'Explore available video lectures'}</Text>
     </Pressable>
-    <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/saved')}} style={({pressed})=>({flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:15,padding:14,gap:9}}>
+    <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/saved')}} style={({pressed})=>({flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:15,padding:14,gap:9,opacity:pressed?.88:1,transform:[{scale:pressed?.985:1}]})}>
      <Ionicons name="bookmark-outline" size={23} color={c.primary}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Saved Questions</Text><Text style={{fontSize:10,color:c.textSecondary}}>{data.saved} saved questions ready for revision</Text>
     </Pressable>
    </View>
   </View>
-  <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/leaderboard')}} style={({pressed})=>({backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:16,padding:15,flexDirection:'row',alignItems:'center',gap:12}}>
+  <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/leaderboard')}} style={({pressed})=>({backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:16,padding:15,flexDirection:'row',alignItems:'center',gap:12,opacity:pressed?.88:1,transform:[{scale:pressed?.985:1}]})}>
    <View style={{width:42,height:42,borderRadius:13,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy-outline" size={22} color={c.amber}/></View>
    <View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Leaderboard & Leagues</Text><Text style={{fontSize:11,color:c.textSecondary}}>Your weekly score · {data.weeklyXp} XP</Text></View><Ionicons name="chevron-forward" size={18} color={c.textMuted}/>
   </Pressable>
   <View style={{flexDirection:'row',gap:10}}>
-   <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/reviews')}} style={({pressed})=>({flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7}}><Ionicons name="star-outline" size={21} color={c.amber}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Rate SmartPrep</Text><Text style={{fontSize:10,color:c.textSecondary}}>Share your review</Text></Pressable>
+   <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/reviews')}} style={({pressed})=>({flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7,opacity:pressed?.88:1,transform:[{scale:pressed?.985:1}]})}><Ionicons name="star-outline" size={21} color={c.amber}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Rate SmartPrep</Text><Text style={{fontSize:10,color:c.textSecondary}}>Share your review</Text></Pressable>
    <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/community')}} style={({pressed})=>({flex:1,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:14,padding:14,gap:7}}><Ionicons name="chatbubbles-outline" size={21} color={c.green}/><Text style={{fontSize:12,fontWeight:'900',color:c.text}}>Community</Text><Text style={{fontSize:10,color:c.textSecondary}}>Coming soon</Text></Pressable>
   </View>
   {loading?<ActivityIndicator color={c.green}/>:null}
