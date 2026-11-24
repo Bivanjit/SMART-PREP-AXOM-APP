@@ -4,6 +4,8 @@ alter table public.practice_sets drop constraint if exists practice_sets_set_typ
 alter table public.practice_sets add constraint practice_sets_set_type_check
   check (set_type in ('mixed','custom','topic','chapter','chapter_test','pyq'));
 
+alter table public.practice_sets add column if not exists notification_sent_at timestamptz;
+
 alter table public.mock_tests
   add column if not exists result_release_mode text not null default 'immediate'
     check (result_release_mode in ('immediate','manual')),
