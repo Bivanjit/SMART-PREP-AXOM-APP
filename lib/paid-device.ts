@@ -28,3 +28,11 @@ export async function ensurePaidDeviceBinding(client:SupabaseClient,userId:strin
  if(refreshError)throw refreshError;
  return Boolean(refreshed.session);
 }
+
+export async function requestPaidDeviceTransfer(client:SupabaseClient,userId:string):Promise<void>{
+ const deviceId=await AsyncStorage.getItem('smartprep:paid-device:'+userId);
+ const sessionId=await AsyncStorage.getItem('smartprep:paid-session:'+userId);
+ if(!deviceId||!sessionId)throw new Error('This device could not be identified. Please restart the app and try again.');
+ const {error}=await client.rpc('request_paid_device_transfer',{p_device_id:deviceId,p_platform:Platform.OS,p_session_id:sessionId});
+ if(error)throw error;
+}
