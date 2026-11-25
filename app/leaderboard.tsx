@@ -6,7 +6,7 @@ import {supabase} from '../lib/supabase';
 import {useTheme} from './_layout';
 import {Heading,Copy,Panel,Button} from '../components/ui';
 import {LeagueBadge} from '../components/LeagueBadge';
-type Entry={user_id:string;display_name:string;cycle_start:string;xp:number;league:string;updated_at:string;banner_path?:string|null;avatar_path?:string|null;avatar_url?:string|null};
+type Entry={user_id:string;display_name:string;cycle_start:string;xp:number;league:string;updated_at:string;banner_path?:string|null;avatar_path?:string|null;avatar_url:string|null};
 const cycleStart=()=>{const d=new Date();const day=(d.getUTCDay()+6)%7;d.setUTCHours(0,0,0,0);d.setUTCDate(d.getUTCDate()-day);return d.toISOString()};
 const order=['Bronze','Silver','Gold','Crystal','Champion','Master','Titan','Legend'];
 const thresholds=[0,100,250,500,900,1400,2000,2800];
