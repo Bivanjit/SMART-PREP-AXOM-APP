@@ -44,3 +44,9 @@ export async function checkCurrentAppSession(client: SupabaseClient): Promise<{a
   if (error) throw error;
   return { allowed: data?.allowed === true, reason: data?.reason };
 }
+
+export async function releaseCurrentAppSession(client: SupabaseClient): Promise<void> {
+ const installationId = await getOrCreateInstallationId();
+ const { error } = await client.rpc('release_app_session', { p_installation_id: installationId });
+ if (error) throw error;
+}
