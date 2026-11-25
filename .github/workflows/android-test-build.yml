@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - feat/centralized-membership-leaderboards
+      - hotfix/v5.0.0-session-security-maintenance
 permissions:
   contents: read
 jobs:
