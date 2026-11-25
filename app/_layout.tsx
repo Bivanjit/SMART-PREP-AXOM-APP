@@ -19,7 +19,7 @@ type Language='en'|'as';
 const colors=designTokens;
 const APP_VERSION_CODE=Number(Constants.expoConfig?.android?.versionCode ?? 50000);
 type Attempt={id:string;title:string;score:number;max:number;correct:number;wrong:number;skipped:number;date:string};
-type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:Language)=>void;c:ThemeColors;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean;paidDeviceStatus:'not_required'};
+type Theme={mode:Mode;setMode:(m:Mode)=>void;language:Language;setLanguage:(l:Language)=>void;c:ThemeColors;bookmarks:string[];toggleBookmark:(id:string)=>void;attempts:Attempt[];saveAttempt:(a:Attempt)=>void;userEmail:string|null;userId:string|null;authLoading:boolean;paidDeviceStatus:'checking'|'not_required'|'ready'|'blocked'|'error'};
 const Context=createContext<Theme|null>(null);
 export function useTheme(){const v=useContext(Context);if(!v)throw Error('Missing app provider');return v}
 export default function Layout(){
