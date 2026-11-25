@@ -123,7 +123,56 @@ as $$
 declare v_email text:=lower(btrim(p_email)); v_uid uuid;
 begin
  if auth.uid() is null or not public.is_smartprep_admin() then raise exception 'Admin access required'; end if;
- if v_email !~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$' then raise exception 'Enter a valid email address'; end if;
+ if v_email !~ '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+ then raise exception 'Enter a valid email address'; end if;
+ select id into v_uid from auth.users where lower(email)=v_email;
+ insert into public.blocked_accounts(email,reason,blocked_device_ids,created_by,is_active,updated_at)
+ values(v_email,left(coalesce(p_reason,''),1000),case when p_installation_id is null or btrim(p_installation_id)='' then '{}'::text[] else array[left(btrim(p_installation_id),128)] end,auth.uid(),true,now())
+ on conflict(normalized_email) do update set email=excluded.email,reason=excluded.reason,blocked_device_ids=case when p_installation_id is null or btrim(p_installation_id)='' then public.blocked_accounts.blocked_device_ids else array(select distinct x from unnest(public.blocked_accounts.blocked_device_ids||excluded.blocked_device_ids) x) end,is_active=true,updated_at=now(),created_by=auth.uid();
+ if v_uid is not null then delete from public.app_active_sessions where user_id=v_uid; end if;
+ return true;
+end $$;
+revoke all on function public.admin_block_student(text,text) from public,anon;
+revoke all on function public.admin_block_student(text,text,text) from public,anon;
+grant execute on function public.admin_block_student(text,text,text) to authenticated;
+
+create or replace function public.admin_unblock_student(p_email text)
+returns boolean language plpgsql security definer set search_path=public
+as $$
+begin
+ if auth.uid() is null or not public.is_smartprep_admin() then raise exception 'Admin access required'; end if;
+ update public.blocked_accounts set is_active=false,updated_at=now() where normalized_email=lower(btrim(p_email));
+ return found;
+end $$;
+revoke all on function public.admin_unblock_student(text) from public,anon;
+grant execute on function public.admin_unblock_student(text) to authenticated;
+
+-- Prevent blocked email addresses from creating new Auth accounts.
+create or replace function public.reject_blocked_email_signup()
+returns trigger language plpgsql security definer set search_path=public
+as $$
+begin
+ if exists(select 1 from public.blocked_accounts b where b.is_active and b.normalized_email=lower(btrim(new.email))) then
+  raise exception 'This email address is not permitted to register. Contact SmartPrep Axom support for review.';
+ end if;
+ return new;
+end $$;
+drop trigger if exists smartprep_reject_blocked_email_signup on auth.users;
+create trigger smartprep_reject_blocked_email_signup before insert or update of email on auth.users
+for each row execute function public.reject_blocked_email_signup();
+
+create or replace function public.release_app_session(p_installation_id text)
+returns boolean language plpgsql security definer set search_path=public,auth
+as $$
+declare v_uid uuid:=auth.uid(); v_sid uuid;
+begin
+ if v_uid is null then return false; end if;
+ v_sid:=nullif(auth.jwt()->>'session_id','')::uuid;
+ delete from public.app_active_sessions where user_id=v_uid and auth_session_id=v_sid and installation_id=p_installation_id;
+ return found;
+end $$;
+revoke all on function public.release_app_session(text) from public,anon;
+grant execute on function public.release_app_session(text) to authenticated;
+ then raise exception 'Enter a valid email address'; end if;
  select id into v_uid from auth.users where lower(email)=v_email;
  insert into public.blocked_accounts(email,reason,blocked_device_ids,created_by,is_active,updated_at)
  values(v_email,left(coalesce(p_reason,''),1000),case when p_installation_id is null or btrim(p_installation_id)='' then '{}'::text[] else array[left(btrim(p_installation_id),128)] end,auth.uid(),true,now())
