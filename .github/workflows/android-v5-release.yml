@@ -1,0 +1,120 @@
+name: SmartPrep Axom Android V5.0.0 Production Release
+concurrency:
+  group: android-v5-production-release
+  cancel-in-progress: false
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/android-v5-release.yml'
+      - 'app.json'
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'app.config.*'
+      - 'babel.config.*'
+      - 'metro.config.*'
+      - 'tsconfig.json'
+permissions:
+  contents: write
+jobs:
+  build-and-release:
+    name: Build and publish Android V5.0.0
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+      - name: Verify release version
+        run: |
+          node <<'NODE'
+          const app = require('./app.json').expo;
+          if (app.version !== '5.0.0') throw new Error('Refusing release: expected versionName 5.0.0, got ' + app.version);
+          if (app.android?.versionCode !== 50000) throw new Error('Refusing release: expected versionCode 50000, got ' + app.android?.versionCode);
+          console.log('Verified SmartPrep Axom ' + app.version + ' (versionCode ' + app.android.versionCode + ')');
+          NODE
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK
+        run: |
+          mkdir -p "$RUNNER_TEMP/android-sdk/cmdline-tools"
+          curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip -o "$RUNNER_TEMP/android-tools.zip"
+          unzip -q "$RUNNER_TEMP/android-tools.zip" -d "$RUNNER_TEMP/android-sdk/cmdline-tools"
+          mv "$RUNNER_TEMP/android-sdk/cmdline-tools/cmdline-tools" "$RUNNER_TEMP/android-sdk/cmdline-tools/latest"
+          echo "ANDROID_HOME=$RUNNER_TEMP/android-sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$RUNNER_TEMP/android-sdk" >> "$GITHUB_ENV"
+          echo "$RUNNER_TEMP/android-sdk/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/android-sdk/platform-tools" >> "$GITHUB_PATH"
+          yes | "$RUNNER_TEMP/android-sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$RUNNER_TEMP/android-sdk" --licenses >/dev/null
+          "$RUNNER_TEMP/android-sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$RUNNER_TEMP/android-sdk" "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "cmake;3.22.1"
+      - name: Install dependencies
+        run: npm install
+      - name: Align Expo SDK dependencies
+        run: npx expo install --fix
+      - name: TypeScript validation
+        run: npm run typecheck
+      - name: Normalize Expo module publication metadata
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const { execSync } = require('child_process');
+          const files = execSync("find node_modules -name expo-module.config.json -not -path '*/.cache/*'", { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+          for (const file of files) {
+            const dir = path.dirname(file);
+            const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+            const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+            const projects = [config.android, ...(config.android?.projects || [])].filter(Boolean);
+            for (const project of projects) if (project.publication && !project.publication.version) project.publication.version = pkg.version;
+            fs.writeFileSync(file, JSON.stringify(config, null, 2));
+          }
+          NODE
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --no-install
+      - name: Build signed release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+      - name: Verify APK output
+        run: |
+          test -s android/app/build/outputs/apk/release/app-release.apk
+          ls -lh android/app/build/outputs/apk/release/app-release.apk
+      - name: Publish GitHub Release V5.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v5.0.0"
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          NOTES="SmartPrep Axom Android 5.0.0
+
+          - Updated membership pricing and entitlement handling
+          - Payment proof submission and manual verification fixes
+          - Separate Chapter Practice and Complete CEE membership approval
+          - Multiple-device premium transfer requests with admin approval
+          - Leaderboard and profile improvements
+
+          Android versionName: 5.0.0
+          Android versionCode: 50000"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Refusing to overwrite existing $TAG release."
+            exit 1
+          fi
+          gh release create "$TAG" "$APK#SmartPrep-Axom-5.0.0.apk" --title "SmartPrep Axom 5.0.0" --notes "$NOTES" --latest --target "$GITHUB_SHA"
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: smartprep-axom-v5.0.0-production
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
