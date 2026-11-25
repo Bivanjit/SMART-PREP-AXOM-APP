@@ -18,11 +18,11 @@ export default function Batches(){
    userId?supabase.from('batch_enrollments').select('batch_id,status').eq('user_id',userId).eq('status','enrolled'):Promise.resolve({data:[]}),
    userId?supabase.from('batch_item_progress').select('batch_item_id,progress_percent,batch_items!inner(batch_id)').eq('user_id',userId):Promise.resolve({data:[]}),
    userId?supabase.from('memberships').select('product_code').eq('user_id',userId).eq('status','active').lte('starts_at',new Date().toISOString()).gt('expires_at',new Date().toISOString()):Promise.resolve({data:[]}),
-   supabase.from('product_plans').select('product_code,price_inr,is_active').in('product_code',['chapter_practice','cee_complete']).eq('is_active',true)
+   supabase.from('product_plans').select('product_code,price_inr,compare_at_price_inr,is_active,offer_label,offer_starts_at,offer_ends_at').in('product_code',['chapter_practice','cee_complete']).eq('is_active',true)
   ]);
   if(bError)throw bError;
   const enrolled=new Set((enrollments||[]).map((x:any)=>x.batch_id));
-  const progressRows=progress||[];const codes=new Set((memberships||[]).map((m:any)=>m.product_code));setPlanPrices(old=>({...old,...Object.fromEntries((plans||[]).map((p:any)=>[p.product_code,Number(p.price_inr)]))}));
+  const progressRows=progress||[];const codes=new Set((memberships||[]).map((m:any)=>m.product_code));setPlanPrices(old=>({...old,...Object.fromEntries((plans||[]).map((p:any)=>{const now=Date.now(),windowed=!!(p.offer_starts_at||p.offer_ends_at),live=(!p.offer_starts_at||new Date(p.offer_starts_at).getTime()<=now)&&(!p.offer_ends_at||new Date(p.offer_ends_at).getTime()>=now);return [p.product_code,Number(windowed&&!live&&p.compare_at_price_inr?p.compare_at_price_inr:p.price_inr)]}))}));
   const mapped=(batches||[]).map((b:any)=>{const items=(b.batch_items||[]).filter((x:any)=>x.is_published);const p=progressRows.filter((x:any)=>items.some((i:any)=>i.id===x.batch_item_id));const pct=p.length?Math.round(p.reduce((sum:number,x:any)=>sum+Number(x.progress_percent||0),0)/Math.max(1,items.length)):0;const hasAccess=b.access_tier==='free'||(b.slug==='chapter-practice-library'&&(codes.has('chapter_practice')||codes.has('cee_complete')))||(b.slug==='cee-complete-premium'&&codes.has('cee_complete'))||(b.access_tier==='premium'&&!['chapter-practice-library','cee-complete-premium'].includes(b.slug)&&codes.has('cee_complete'));return {...b,items,enrolled:enrolled.has(b.id),progress:pct,hasAccess} as Batch});
   if(live)setRows(mapped);
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load batches.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[userId]);
