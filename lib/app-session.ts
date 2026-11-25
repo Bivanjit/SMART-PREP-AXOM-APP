@@ -25,6 +25,9 @@ export async function registerCurrentAppSession(client: SupabaseClient): Promise
   });
   if (error) throw error;
   if (!data?.active) throw new Error('Could not activate this app session.');
+  // Revoke refresh sessions on every other device/browser while preserving this newest login.
+  const { error: revokeError } = await client.auth.signOut({ scope: 'others' });
+  if (revokeError) throw revokeError;
 }
 export async function ensureCurrentAppSession(client: SupabaseClient): Promise<boolean> {
   const installationId = await getOrCreateInstallationId();
