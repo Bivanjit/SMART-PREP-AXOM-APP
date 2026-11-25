@@ -10,7 +10,7 @@ type Batch={id:string;slug:string;title:string;subtitle:string|null;description:
 type Filter='all'|'free'|'premium';
 const assamHero='https://commons.wikimedia.org/wiki/Special:FilePath/A_Tea_Garden_of_Assam.jpg?width=1400';
 export default function Batches(){
- const {c,userId}=useTheme();const {width:windowWidth}=useWindowDimensions();const [rows,setRows]=useState<Batch[]>([]),[filter,setFilter]=useState<Filter>('all');
+ const {c,userId,paidDeviceStatus}=useTheme();const {width:windowWidth}=useWindowDimensions();const [rows,setRows]=useState<Batch[]>([]),[filter,setFilter]=useState<Filter>('all');
  const [loading,setLoading]=useState(true),[error,setError]=useState(''),[enrolling,setEnrolling]=useState<string|null>(null),[planPrices,setPlanPrices]=useState<Record<string,number>>({chapter_practice:99,cee_complete:299});
  useEffect(()=>{let live=true;void(async()=>{if(!supabase){setLoading(false);return;}try{
   const [{data:batches,error:bError},{data:enrollments},{data:progress},{data:memberships},{data:plans}]=await Promise.all([
@@ -27,7 +27,7 @@ export default function Batches(){
   if(live)setRows(mapped);
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load batches.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[userId]);
  const visible=useMemo(()=>rows.filter(b=>filter==='all'||b.access_tier===filter),[rows,filter]);
- async function enroll(batch:Batch){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'&&!batch.hasAccess){router.push('/premium');return;}if(batch.hasMembershipAccess){router.push({pathname:'/batch/[id]',params:{id:batch.id}});return;}
+ async function enroll(batch:Batch){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'&&!batch.hasAccess){router.push('/premium');return;}if(batch.hasMembershipAccess){if(paidDeviceStatus!=='ready'){setError(paidDeviceStatus==='blocked'?'This paid membership is bound to another device. Ask the admin to reset your device binding, then reopen the app.':'Your paid-device access is still being checked. Please try again shortly.');return;}router.push({pathname:'/batch/[id]',params:{id:batch.id}});return;}
   setEnrolling(batch.id);const {error}=await supabase!.from('batch_enrollments').insert({batch_id:batch.id,user_id:userId});setEnrolling(null);if(error&&error.code!=='23505'){setError(error.message);return;}setRows(old=>old.map(x=>x.id===batch.id?{...x,enrolled:true}:x));router.push({pathname:'/batch/[id]',params:{id:batch.id}});
  }
  const filters=[{label:'All Batches',value:'all' as const},{label:'Free',value:'free' as const},{label:'Premium',value:'premium' as const}];
@@ -45,7 +45,7 @@ export default function Batches(){
     <Copy>{batch.description||batch.syllabus_summary||'Course content and learning resources will appear here after the batch is configured.'}</Copy>
     <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}><Text style={{fontSize:10,color:c.textSecondary}}>{batch.access_tier==='premium'&&!batch.hasAccess?'Premium learning content':`${batch.items.length} published ${batch.items.length===1?'learning item':'learning items'}`}</Text><Text style={{fontSize:10,fontWeight:'900',color:c.green}}>{batch.progress}%</Text></View>
     <ProgressBar value={batch.progress}/>
-    <Button title={batch.enrolled?'Resume Learning':batch.access_tier==='premium'?(batch.hasMembershipAccess?'Open included access':batch.slug==='chapter-practice-library'?'Unlock · ₹'+planPrices.chapter_practice:'Unlock · ₹'+planPrices.cee_complete):'Enroll in Free Batch'} icon={batch.enrolled?'play':'arrow-forward'} loading={enrolling===batch.id} disabled={enrolling===batch.id} onPress={()=>batch.enrolled?router.push({pathname:'/batch/[id]',params:{id:batch.id}}):void enroll(batch)}/>
+    <Button title={batch.enrolled?'Resume Learning':batch.access_tier==='premium'?(batch.hasMembershipAccess?(paidDeviceStatus==='ready'?'Open included access':paidDeviceStatus==='blocked'?'Reset device binding':'Checking paid access…'):batch.slug==='chapter-practice-library'?'Unlock · ₹'+planPrices.chapter_practice:'Unlock · ₹'+planPrices.cee_complete):'Enroll in Free Batch'} icon={batch.enrolled?'play':'arrow-forward'} loading={enrolling===batch.id} disabled={enrolling===batch.id||(batch.hasMembershipAccess&&paidDeviceStatus!=='ready')} onPress={()=>batch.enrolled?router.push({pathname:'/batch/[id]',params:{id:batch.id}}):void enroll(batch)}/>
    </View>
   </Panel>}) : !loading&&!error?<EmptyState icon="school-outline" title="No published batches yet" description="Your batch catalogue is ready. The Foundation Batch, Crash Course and Chapter Wise Concept Series will appear here after they are configured and published in the admin console."/>:null}
  </ScrollView>;
