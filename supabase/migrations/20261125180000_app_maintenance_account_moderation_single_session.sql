@@ -159,3 +159,16 @@ end $$;
 drop trigger if exists smartprep_reject_blocked_email_signup on auth.users;
 create trigger smartprep_reject_blocked_email_signup before insert or update of email on auth.users
 for each row execute function public.reject_blocked_email_signup();
+
+create or replace function public.release_app_session(p_installation_id text)
+returns boolean language plpgsql security definer set search_path=public,auth
+as $$
+declare v_uid uuid:=auth.uid(); v_sid uuid;
+begin
+ if v_uid is null then return false; end if;
+ v_sid:=nullif(auth.jwt()->>'session_id','')::uuid;
+ delete from public.app_active_sessions where user_id=v_uid and auth_session_id=v_sid and installation_id=p_installation_id;
+ return found;
+end $$;
+revoke all on function public.release_app_session(text) from public,anon;
+grant execute on function public.release_app_session(text) to authenticated;
