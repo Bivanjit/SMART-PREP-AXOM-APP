@@ -1,9 +1,8 @@
 import React from 'react';
-import Svg,{Defs,LinearGradient,Stop,Rect,Path,Polygon} from 'react-native-svg';
+import Svg,{Defs,LinearGradient,Stop,Path} from 'react-native-svg';
 
 export default function BrandLogo({size=48}:{size?:number}){
  return <Svg width={size} height={size} viewBox="0 0 100 100">
-  <Rect width="100" height="100" rx="20" fill="#07184B"/>
   <Defs>
    <LinearGradient id="brandRibbon" x1="0" y1="0" x2="1" y2="1">
     <Stop offset="0" stopColor="#7DD3FC"/>
