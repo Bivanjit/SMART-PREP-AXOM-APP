@@ -9,13 +9,13 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#06163B"
+      "backgroundColor": "#FFFFFF"
     },
     "android": {
       "package": "com.smartprepaxom.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#06163B"
+        "backgroundColor": "#FFFFFF"
       },
       "versionCode": 40000,
       "googleServicesFile": "./google-services.json",
