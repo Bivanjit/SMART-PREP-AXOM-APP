@@ -29,14 +29,14 @@ export async function registerCurrentAppSession(client: SupabaseClient): Promise
   const { error: revokeError } = await client.auth.signOut({ scope: 'others' });
   if (revokeError) throw revokeError;
 }
-export async function ensureCurrentAppSession(client: SupabaseClient): Promise<boolean> {
+export async function ensureCurrentAppSession(client: SupabaseClient): Promise<{allowed:boolean;reason?:string}> {
   const installationId = await getOrCreateInstallationId();
   const { data, error } = await client.rpc('ensure_app_session', {
     p_installation_id: installationId,
     p_platform: Platform.OS
   });
   if (error) throw error;
-  return data?.allowed === true;
+  return { allowed: data?.allowed === true, reason: data?.reason };
 }
 export async function checkCurrentAppSession(client: SupabaseClient): Promise<{allowed:boolean;reason?:string}> {
   const installationId = await getOrCreateInstallationId();
