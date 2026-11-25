@@ -28,7 +28,7 @@ export default function Batches(){
  }catch(e){if(live)setError(e instanceof Error?e.message:'Could not load batches.')}finally{if(live)setLoading(false)}})();return()=>{live=false}},[userId]);
  const visible=useMemo(()=>rows.filter(b=>filter==='all'||b.access_tier===filter),[rows,filter]);
  async function enroll(batch:Batch){if(!userId){router.push('/auth');return;}if(batch.access_tier==='premium'&&!batch.hasAccess){router.push('/premium');return;}if(batch.hasMembershipAccess){if(paidDeviceStatus!=='ready'){setError(paidDeviceStatus==='blocked'?'This paid membership is bound to another device. Ask the admin to reset your device binding, then reopen the app.':'Your paid-device access is still being checked. Please try again shortly.');return;}router.push({pathname:'/batch/[id]',params:{id:batch.id}});return;}
-  setEnrolling(batch.id);const {error}=await supabase!.from('batch_enrollments').insert({batch_id:batch.id,user_id:userId});setEnrolling(null);if(error&&error.code!=='23505'){setError(error.message);return;}setRows(old=>old.map(x=>x.id===batch.id?{...x,enrolled:true}:x));router.push({pathname:'/batch/[id]',params:{id:batch.id}});
+  setEnrolling(batch.id);const {error}=await supabase!.rpc('enroll_in_batch',{p_batch_id:batch.id});setEnrolling(null);if(error){setError(error.message);return;}setRows(old=>old.map(x=>x.id===batch.id?{...x,enrolled:true}:x));router.push({pathname:'/batch/[id]',params:{id:batch.id}});
  }
  const filters=[{label:'All Batches',value:'all' as const},{label:'Free',value:'free' as const},{label:'Premium',value:'premium' as const}];
  return <ScrollView style={{flex:1,backgroundColor:c.bg}} contentContainerStyle={{padding:17,paddingTop:14,gap:16,paddingBottom:44}}>
