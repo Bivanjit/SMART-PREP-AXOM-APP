@@ -1,0 +1,43 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+const INSTALLATION_KEY = 'smartprep.installation-id.v1';
+function uuid(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.floor(Math.random() * 16);
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+export async function getOrCreateInstallationId(): Promise<string> {
+  let id = await AsyncStorage.getItem(INSTALLATION_KEY);
+  if (!id) {
+    id = 'spx-' + uuid() + '-' + uuid();
+    await AsyncStorage.setItem(INSTALLATION_KEY, id);
+  }
+  return id;
+}
+export async function registerCurrentAppSession(client: SupabaseClient): Promise<void> {
+  const installationId = await getOrCreateInstallationId();
+  const { data, error } = await client.rpc('register_app_session', {
+    p_installation_id: installationId,
+    p_platform: Platform.OS
+  });
+  if (error) throw error;
+  if (!data?.active) throw new Error('Could not activate this app session.');
+}
+export async function ensureCurrentAppSession(client: SupabaseClient): Promise<boolean> {
+  const installationId = await getOrCreateInstallationId();
+  const { data, error } = await client.rpc('ensure_app_session', {
+    p_installation_id: installationId,
+    p_platform: Platform.OS
+  });
+  if (error) throw error;
+  return data?.allowed === true;
+}
+export async function checkCurrentAppSession(client: SupabaseClient): Promise<{allowed:boolean;reason?:string}> {
+  const installationId = await getOrCreateInstallationId();
+  const { data, error } = await client.rpc('check_app_session', { p_installation_id: installationId });
+  if (error) throw error;
+  return { allowed: data?.allowed === true, reason: data?.reason };
+}
