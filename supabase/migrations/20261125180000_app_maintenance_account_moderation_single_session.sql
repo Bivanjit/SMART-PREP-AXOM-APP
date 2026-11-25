@@ -100,8 +100,8 @@ revoke all on function public.ensure_app_session(text,text) from public,anon;
 grant execute on function public.ensure_app_session(text,text) to authenticated;
 
 create or replace function public.check_app_session(p_installation_id text)
-returns jsonb language plpgsql stable security definer set search_path=public,auth
-as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,auth
+as $
 declare v_uid uuid:=auth.uid(); v_sid uuid; v_email text; v_blocked boolean; v_current boolean;
 begin
  if v_uid is null then return jsonb_build_object('authenticated',false,'allowed',false,'reason','signed_out'); end if;
