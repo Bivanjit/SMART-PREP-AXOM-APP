@@ -33,7 +33,7 @@ jobs:
           node <<'NODE'
           const app = require('./app.json').expo;
           if (app.version !== '5.0.0') throw new Error('Refusing release: expected versionName 5.0.0, got ' + app.version);
-          if (app.android?.versionCode !== 50000) throw new Error('Refusing release: expected versionCode 50000, got ' + app.android?.versionCode);
+          if (app.android?.versionCode !== 50001) throw new Error('Refusing release: expected versionCode 50001, got ' + app.android?.versionCode);
           console.log('Verified SmartPrep Axom ' + app.version + ' (versionCode ' + app.android.versionCode + ')');
           NODE
       - name: Set up Node.js
@@ -94,18 +94,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v5.0.0"
+          TAG="v5.0.0-hotfix1"
           APK="android/app/build/outputs/apk/release/app-release.apk"
-          NOTES="SmartPrep Axom Android 5.0.0
+          NOTES="SmartPrep Axom Android 5.0.0 security hotfix
 
-          - Updated membership pricing and entitlement handling
-          - Payment proof submission and manual verification fixes
-          - Separate Chapter Practice and Complete CEE membership approval
-          - Multiple-device premium transfer requests with admin approval
-          - Leaderboard and profile improvements
+          - Correct installed-version comparison for update prompts
+          - Enforce one active app login session per account
+          - Add account and installation blocking controls
+          - Add global maintenance mode controls
+          - Preserve Android versionName 5.0.0 with incremented versionCode
 
           Android versionName: 5.0.0
-          Android versionCode: 50000"
+          Android versionCode: 50001"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Refusing to overwrite existing $TAG release."
             exit 1
