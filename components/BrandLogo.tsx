@@ -12,8 +12,8 @@ export default function BrandLogo({size=48}:{size?:number}){
   </Defs>
   <Path d="M15 45 C17 32 29 26 45 22 L72 15 C85 12 91 20 86 33 C82 44 75 49 61 53 L27 64 C17 67 12 57 15 45Z" fill="#07184B"/>
   <Path d="M27 62 C40 57 56 51 70 47 C84 43 92 51 87 66 L81 81 C77 90 68 92 55 96 L13 100 C8 101 6 97 8 91 L14 73 C16 67 20 64 27 62Z" fill="url(#brandRibbon)"/>
-  <Path d="M52 10 L75 1 L97 13 L74 25Z" fill="#FFFFFF"/>
+  <Path d="M52 10 L75 1 L97 13 L74 25Z" fill="#07184B"/>
   <Path d="M74 24 L74 39" stroke="#07184B" strokeWidth="2.8" strokeLinecap="round"/>
-  <Path d="M69 38 L79 38 L81 48 L67 48Z" fill="#FFFFFF"/>
+  <Path d="M69 38 L79 38 L81 48 L67 48Z" fill="#07184B"/>
  </Svg>;
 }
