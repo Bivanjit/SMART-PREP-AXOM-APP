@@ -1,1 +1,1 @@
-export const RELEASE_VALIDATION = '2.2.0';
+export const RELEASE_VALIDATION = '5.0.0';
