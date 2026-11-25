@@ -145,3 +145,17 @@ begin
 end $$;
 revoke all on function public.admin_unblock_student(text) from public,anon;
 grant execute on function public.admin_unblock_student(text) to authenticated;
+
+-- Prevent blocked email addresses from creating new Auth accounts.
+create or replace function public.reject_blocked_email_signup()
+returns trigger language plpgsql security definer set search_path=public
+as $$
+begin
+ if exists(select 1 from public.blocked_accounts b where b.is_active and b.normalized_email=lower(btrim(new.email))) then
+  raise exception 'This email address is not permitted to register. Contact SmartPrep Axom support for review.';
+ end if;
+ return new;
+end $$;
+drop trigger if exists smartprep_reject_blocked_email_signup on auth.users;
+create trigger smartprep_reject_blocked_email_signup before insert or update of email on auth.users
+for each row execute function public.reject_blocked_email_signup();
