@@ -53,7 +53,7 @@ export default function CEEToolNative(){
  },[route]);
  useEffect(()=>{setLoading(true);void load()},[load]);
  const refresh=()=>{setRefreshing(true);void load()};
- const filtered=useMemo(()=>rows.filter(r=>(route==='/analytics'||route==='/analytics/pyq-analysis'||route==='/cee-outlook'||route==='/chapter-intelligence'||route==='/analytics/exam-difficulty'?true:r.subject===subject)&&String(r.chapter||'').toLowerCase().includes(search.toLowerCase())),[rows,route,subject,search]);
+ const filtered=useMemo(()=>rows.filter(r=>(route==='/analytics'||route==='/analytics/pyq-analysis'||route==='/cee-outlook'||route==='/chapter-intelligence'||route==='/analytics/exam-difficulty'?(subject==='All'||r.subject===subject):r.subject===subject)&&String(r.chapter||'').toLowerCase().includes(search.toLowerCase())),[rows,route,subject,search]);
  const total=filtered.reduce((n,r)=>n+Number(r.total_questions_9yr||0),0);
  const rankEstimate=useMemo(()=>{const marks=Number(score);if(!Number.isFinite(marks)||!extra.length)return null;const ordered=[...extra].sort((a,b)=>Math.abs(Number(a.score)-marks)-Math.abs(Number(b.score)-marks));return ordered[0]||null},[score,extra]);
  const card=(label:string,value:string,sub?:string)=><View key={label} style={{flex:1,minWidth:'43%',padding:14,borderRadius:16,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:5}}><Text style={{fontSize:10,color:c.textSecondary,fontWeight:'700'}}>{label}</Text><Text style={{fontSize:22,color:c.text,fontWeight:'900'}}>{value}</Text>{!!sub&&<Text style={{fontSize:10,color:c.textMuted}}>{sub}</Text>}</View>;
