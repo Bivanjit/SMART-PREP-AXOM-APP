@@ -31,7 +31,7 @@ export default function CEEToolNative(){
    if(isAdmission)jobs.push(supabase.from('engineering_institutions').select('id,name,city').eq('is_active',true).order('name'),supabase.from('engineering_branches').select('id,name').eq('is_active',true).order('name'),supabase.from('admission_categories').select('id,name,code').order('name'));
    const results=await Promise.all(jobs);
    for(const r of results){if(r.error)throw r.error;}
-   setVersions(results[0].data||[]);setRows(results[1].data||[]);setAnnual(results[2].data||[]);
+   setVersions(isPrediction?(results[3]?.data||[]):(results[0].data||[]));setRows(results[1].data||[]);setAnnual(results[2].data||[]);
    const rest=results.slice(3).flatMap((r:any)=>r.data||[]);setExtra(rest);
    if(isPrediction&&results[3]?.data?.[0]){const {data,error}=await supabase.from('chapter_predictions').select('subject_slug,chapter_name,predicted_questions,likelihood,confidence,rationale').eq('prediction_version_id',results[3].data[0].id).order('predicted_questions',{ascending:false});if(error)throw error;setExtra(data||[]);}
    if(route==='/daily-10'){
