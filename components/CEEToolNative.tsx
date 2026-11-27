@@ -63,31 +63,201 @@ export default function CEEToolNative(){
  const body=()=>{
   if(route==='/daily-10'){
    const bundle=extra[0],qs=bundle?.questions||[];
-   const finish=async()=>{if(!supabase||!bundle?.challenge||submitting||challengeResult)return;setSubmitting(true);try{const {data,error}=await supabase.rpc('submit_website_daily_challenge',{p_challenge_id:bundle.challenge.id,p_answers:answer});if(error)throw error;setChallengeResult(data);setSubmitted(true);}catch(e:any){setError(e?.message||'Could not submit the challenge. Please retry.');}finally{setSubmitting(false);}};
-   return <>{bundle&&panel("Daily challenge",<><Text style={{fontSize:12,color:c.textSecondary}}>{bundle.challenge?.title||'Daily 10'} · 10 questions · PCM</Text>{qs.map((q:Row,i)=><View key={q.id||i} style={{gap:8,paddingVertical:12,borderBottomWidth:1,borderBottomColor:c.border}}><Text style={{fontSize:12,fontWeight:'900',color:c.blue}}>Q{i+1} · {q.subject} · {q.chapter||'Mixed practice'}</Text><Text style={{fontSize:14,color:c.text,lineHeight:21}}>{q.prompt}</Text>{(q.options||[]).map((opt:string,j:number)=>pill(String.fromCharCode(65+j)+'. '+opt,answer[q.id]===j,()=>{if(!submitted)setAnswer(a=>({...a,[q.id]:j}))}))}</View>)}<Pressable disabled={submitting||submitted||Object.keys(answer).length===0} onPress={()=>void finish()} style={{backgroundColor:c.blue,padding:14,borderRadius:12,alignItems:'center',opacity:submitting||submitted?.6:1}}><Text style={{color:'#fff',fontWeight:'900'}}>{submitting?'Submitting…':submitted?'Submitted':'Submit challenge'}</Text></Pressable>{challengeResult&&<View style={{padding:14,borderRadius:14,backgroundColor:c.soft,gap:5}}><Text style={{fontSize:10,fontWeight:'900',color:c.green}}>YOUR RESULT</Text><Text style={{fontSize:25,fontWeight:'900',color:c.text}}>{fmt(challengeResult.score)} / 40</Text><Text style={{fontSize:11,color:c.textSecondary}}>{fmt(challengeResult.correct)} correct · {fmt(challengeResult.wrong)} incorrect · {fmt(challengeResult.unanswered)} unanswered</Text></View>}</>)}</>;
+   const finish=async()=>{
+    if(!supabase||!bundle?.challenge||submitting||challengeResult)return;
+    setSubmitting(true);
+    try{
+     const {data,error}=await supabase.rpc('submit_website_daily_challenge',{p_challenge_id:bundle.challenge.id,p_answers:answer});
+     if(error)throw error;
+     setChallengeResult(data);setSubmitted(true);
+    }catch(e:any){setError(e?.message||'Could not submit the challenge. Please retry.');}
+    finally{setSubmitting(false);}
+   };
+   return (
+    <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Daily 10 challenge</Text>
+     <Text style={{fontSize:12,color:c.textSecondary}}>10 questions · PCM · 40 maximum marks</Text>
+     {qs.map((q:Row,i)=>(
+      <View key={q.id||i} style={{paddingVertical:12,borderBottomWidth:1,borderBottomColor:c.border,gap:8}}>
+       <Text style={{fontSize:12,fontWeight:'900',color:c.blue}}>Q{i+1} · {q.subject} · {q.chapter||'Mixed practice'}</Text>
+       <Text style={{fontSize:14,color:c.text,lineHeight:21}}>{q.prompt}</Text>
+       {(q.options||[]).map((opt:string,j:number)=>(
+        <Pressable key={j} disabled={submitted} onPress={()=>setAnswer(v=>({...v,[q.id]:j}))} style={{padding:11,borderRadius:11,borderWidth:1,borderColor:answer[q.id]===j?c.blue:c.border,backgroundColor:answer[q.id]===j?c.soft:c.input}}>
+         <Text style={{fontSize:12,color:c.text,fontWeight:'700'}}>{String.fromCharCode(65+j)}. {opt}</Text>
+        </Pressable>
+       ))}
+      </View>
+     ))}
+     <Pressable disabled={submitting||submitted||Object.keys(answer).length===0} onPress={()=>void finish()} style={{backgroundColor:c.blue,padding:14,borderRadius:12,alignItems:'center',opacity:submitting||submitted?0.6:1}}>
+      <Text style={{color:'#fff',fontWeight:'900'}}>{submitting?'Submitting…':submitted?'Submitted':'Submit challenge'}</Text>
+     </Pressable>
+     {challengeResult?(
+      <View style={{padding:14,borderRadius:14,backgroundColor:c.soft,gap:5}}>
+       <Text style={{fontSize:10,fontWeight:'900',color:c.green}}>YOUR RESULT</Text>
+       <Text style={{fontSize:25,fontWeight:'900',color:c.text}}>{fmt(challengeResult.score)} / 40</Text>
+       <Text style={{fontSize:11,color:c.textSecondary}}>{fmt(challengeResult.correct)} correct · {fmt(challengeResult.wrong)} incorrect · {fmt(challengeResult.unanswered)} unanswered</Text>
+      </View>
+     ):null}
+    </View>
+   );
   }
   if(route==='/predictor/rank'||route==='/predictor/marks-to-rank'){
-   return <>{panel('Estimate your rank',<>{field('Expected marks',score,setScore,'Enter your CEE marks','decimal-pad')}{field('Exam year reference',rank,setRank,'e.g. 2026','numeric')}{rankEstimate? <View style={{backgroundColor:c.soft,padding:14,borderRadius:14,gap:4}}><Text style={{color:c.textSecondary,fontSize:11}}>Nearest historical reference · {rankEstimate.exam_year}</Text><Text style={{color:c.text,fontSize:26,fontWeight:'900'}}>Rank {fmt(rankEstimate.merit_rank)}</Text><Text style={{color:c.textSecondary,fontSize:11}}>At {fmt(rankEstimate.score)} marks · historical comparison, not a guaranteed prediction</Text></View>:<Text style={{fontSize:11,color:c.textMuted}}>Enter marks to compare with published historical score–rank data.</Text>}</>)}{card('Reference points',fmt(extra.length),'Published score–rank records')}</>}
+   return (
+    <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Estimate your rank</Text>
+     {field('Expected marks',score,setScore,'Enter your CEE marks','decimal-pad')}
+     {field('Exam year reference',rank,setRank,'e.g. 2026','numeric')}
+     {rankEstimate?(
+      <View style={{backgroundColor:c.soft,padding:14,borderRadius:14,gap:4}}>
+       <Text style={{color:c.textSecondary,fontSize:11}}>Nearest historical reference · {rankEstimate.exam_year}</Text>
+       <Text style={{color:c.text,fontSize:26,fontWeight:'900'}}>Rank {fmt(rankEstimate.merit_rank)}</Text>
+       <Text style={{color:c.textSecondary,fontSize:11}}>At {fmt(rankEstimate.score)} marks · historical comparison, not a guaranteed prediction</Text>
+      </View>
+     ):<Text style={{fontSize:11,color:c.textMuted}}>Enter marks to compare with published historical score–rank data.</Text>}
+     {card('Reference points',fmt(extra.length),'Published score–rank records')}
+    </View>
+   );
   }
   if(route==='/predictor/college'||route==='/analytics/college-cutoff-analysis'||route==='/my-college-path'){
-   const cutoffs=extra.filter(x=>x.closing_rank);const filteredCuts=cutoffs.filter(x=>(!college||JSON.stringify(x).toLowerCase().includes(college.toLowerCase()))&&(!branch||JSON.stringify(x.engineering_branches||'').toLowerCase().includes(branch.toLowerCase())));
-   return <>{panel('Admission filters',<>{field('Search college',college,setCollege,'Type college name')}{field('Search branch',branch,setBranch,'Type branch name')}{field('Category',category,setCategory,'e.g. OPEN / OBC / SC')}</>)}{panel('Verified historical cutoffs',filteredCuts.length?filteredCuts.slice(0,50).map((x,i)=><View key={i} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:c.border,gap:3}}><Text style={{color:c.text,fontWeight:'900',fontSize:13}}>{x.engineering_institutions?.name||'Engineering college'}</Text><Text style={{color:c.textSecondary,fontSize:11}}>{x.engineering_branches?.name||'Branch'} · {x.admission_categories?.name||'Category'} · {x.admission_year}</Text><Text style={{color:c.blue,fontWeight:'900',fontSize:13}}>Closing rank: {fmt(x.closing_rank)}</Text></View>):<Text style={{color:c.textSecondary,fontSize:12}}>No verified cutoff rows match these filters yet. Only verified records are displayed.</Text>)}</>;
+   const cutoffs=extra.filter(x=>x.closing_rank);
+   const filteredCuts=cutoffs.filter(x=>(!college||JSON.stringify(x).toLowerCase().includes(college.toLowerCase()))&&(!branch||JSON.stringify(x.engineering_branches||'').toLowerCase().includes(branch.toLowerCase()))&&(!category||String(x.admission_categories?.name||'').toLowerCase().includes(category.toLowerCase())||String(x.admission_categories?.code||'').toLowerCase().includes(category.toLowerCase())));
+   return (
+    <View style={{gap:14}}>
+     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Admission filters</Text>
+      {field('Search college',college,setCollege,'Type college name')}
+      {field('Search branch',branch,setBranch,'Type branch name')}
+      {field('Category',category,setCategory,'e.g. OPEN / OBC / SC')}
+     </View>
+     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:10}}>
+      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Verified historical cutoffs</Text>
+      {filteredCuts.length?filteredCuts.slice(0,50).map((x,i)=>(
+       <View key={i} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:c.border,gap:3}}>
+        <Text style={{color:c.text,fontWeight:'900',fontSize:13}}>{x.engineering_institutions?.name||'Engineering college'}</Text>
+        <Text style={{color:c.textSecondary,fontSize:11}}>{x.engineering_branches?.name||'Branch'} · {x.admission_categories?.name||'Category'} · {x.admission_year}</Text>
+        <Text style={{color:c.blue,fontWeight:'900',fontSize:13}}>Closing rank: {fmt(x.closing_rank)}</Text>
+       </View>
+      )):<Text style={{color:c.textSecondary,fontSize:12}}>No verified cutoff rows match these filters yet. Only verified records are displayed.</Text>}
+     </View>
+    </View>
+   );
   }
-  if(route==='/admission-navigator')return <>{panel('Counselling checklist',["Keep your CEE admit card and score/rank details ready","Check DTE Assam counselling notifications and schedules","Prepare Class 10 and 12 marksheets and certificates","Keep category / reservation certificates ready where applicable","Review college, branch, category and round-wise cutoff references"].map((x,i)=><Text key={i} style={{color:c.textSecondary,fontSize:12,lineHeight:20}}>• {x}</Text>))}{panel('Official admission source',<Text style={{color:c.textSecondary,fontSize:12}}>Use the Directorate of Technical Education, Assam official website for current counselling notices and documents. Verify dates and eligibility from the current notice.</Text>)}</>;
-  if(route==='/practice-arena')return <>{panel('Choose a subject',<>{['Physics','Chemistry','Mathematics'].map(s=><Action key={s} label={s+' practice'} colors={c} onPress={()=>router.push({pathname:'/practice/[subject]',params:{subject:s.toLowerCase()}} as never)} icon="book-outline"/>)}</>)}</>;
-  if(route==='/my-cee-journey')return <View style={{padding:16,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}><Text style={{color:c.text,fontWeight:'900',fontSize:15}}>Your preparation journey</Text><Text style={{color:c.textSecondary,fontSize:12,lineHeight:19}}>Keep your daily study routine consistent. Use the app study timer, planner, saved questions and practice history to track progress.</Text><Action label="Open study planner" colors={c} onPress={()=>router.push('/planner')}/><Action label="Open practice history" colors={c} onPress={()=>router.push('/(tabs)/insights' as never)}/></View>;
-  if(route==='/my-target-card')return <>{panel('Your CEE target',<>{field('Your target rank',rank,setRank,'e.g. 500','numeric')}{field('Your target marks',score,setScore,'e.g. 120','numeric')}<View style={{padding:16,backgroundColor:c.soft,borderRadius:14,alignItems:'center',gap:5}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1,color:c.green}}>SMARTPREP AXOM · ASSAM CEE 2027</Text><Text style={{fontSize:22,fontWeight:'900',color:c.text}}>MY CEE TARGET</Text><Text style={{fontSize:17,color:c.blue,fontWeight:'900'}}>Rank {rank||'—'} · {score||'—'} marks</Text></View></>)}</>;
+  if(route==='/admission-navigator'){
+   const tasks=['Keep your CEE admit card and score/rank details ready','Check DTE Assam counselling notifications and schedules','Prepare Class 10 and 12 marksheets and certificates','Keep category / reservation certificates ready where applicable','Review college, branch, category and round-wise cutoff references'];
+   return (
+    <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Counselling checklist</Text>
+     {tasks.map((task,i)=><Text key={i} style={{color:c.textSecondary,fontSize:12,lineHeight:20}}>• {task}</Text>)}
+     <Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Official admission source</Text>
+     <Text style={{color:c.textSecondary,fontSize:12}}>Use the Directorate of Technical Education, Assam official website for current counselling notices and documents. Verify dates and eligibility from the current notice.</Text>
+    </View>
+   );
+  }
+  if(route==='/practice-arena'){
+   return (
+    <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Choose a subject</Text>
+     {['Physics','Chemistry','Mathematics'].map(subjectName=>(
+      <Action key={subjectName} label={subjectName+' practice'} colors={c} onPress={()=>router.push({pathname:'/practice/[subject]',params:{subject:subjectName.toLowerCase()}} as never)} icon="book-outline"/>
+     ))}
+    </View>
+   );
+  }
+  if(route==='/my-cee-journey'){
+   return (
+    <View style={{padding:16,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+     <Text style={{color:c.text,fontWeight:'900',fontSize:15}}>Your preparation journey</Text>
+     <Text style={{color:c.textSecondary,fontSize:12,lineHeight:19}}>Keep your daily study routine consistent. Use the study timer, planner, saved questions and practice history to track progress.</Text>
+     <Action label="Open study planner" colors={c} onPress={()=>router.push('/planner')}/>
+     <Action label="Open practice history" colors={c} onPress={()=>router.push('/(tabs)/insights' as never)}/>
+    </View>
+   );
+  }
+  if(route==='/my-target-card'){
+   return (
+    <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+     <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Your CEE target</Text>
+     {field('Your target rank',rank,setRank,'e.g. 500','numeric')}
+     {field('Your target marks',score,setScore,'e.g. 120','numeric')}
+     <View style={{padding:16,backgroundColor:c.soft,borderRadius:14,alignItems:'center',gap:5}}>
+      <Text style={{fontSize:10,fontWeight:'900',letterSpacing:1,color:c.green}}>SMARTPREP AXOM · ASSAM CEE 2027</Text>
+      <Text style={{fontSize:22,fontWeight:'900',color:c.text}}>MY CEE TARGET</Text>
+      <Text style={{fontSize:17,color:c.blue,fontWeight:'900'}}>Rank {rank||'—'} · {score||'—'} marks</Text>
+     </View>
+    </View>
+   );
+  }
   if(route==='/analytics/cee-2027-predictions'){
    const predictionRows=extra.filter(x=>x.chapter_name);
-   return <>{panel('Published prediction model',versions[0]?<><Text style={{color:c.text,fontWeight:'900'}}>{versions[0].label||versions[0].version}</Text><Text style={{color:c.textSecondary,fontSize:11}}>{versions[0].source_description||'Published historical trend model'}</Text></>:<Text style={{color:c.textSecondary,fontSize:12}}>No published prediction model is currently available.</Text>)}{panel('Chapter priority signals',predictionRows.length?predictionRows.map((r,i)=><View key={i} style={{paddingVertical:8,borderBottomWidth:1,borderBottomColor:c.border}}><Text style={{color:c.text,fontWeight:'900'}}>{r.chapter_name}</Text><Text style={{color:c.textSecondary,fontSize:11}}>{r.subject_slug} · {r.predicted_questions} predicted questions · {r.likelihood} likelihood</Text></View>):<Text style={{color:c.textSecondary,fontSize:12}}>Prediction records are not available in the published dataset.</Text>)}</>;
+   return (
+    <View style={{gap:14}}>
+     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:6}}>
+      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Published prediction model</Text>
+      <Text style={{color:c.text,fontWeight:'900'}}>{versions[0]?.label||versions[0]?.version||'No published model'}</Text>
+      <Text style={{color:c.textSecondary,fontSize:11}}>{versions[0]?.source_description||'Prediction data is published by SmartPrep administrators.'}</Text>
+     </View>
+     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:10}}>
+      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Chapter priority signals</Text>
+      {predictionRows.length?predictionRows.map((r,i)=>(
+       <View key={i} style={{paddingVertical:8,borderBottomWidth:1,borderBottomColor:c.border}}>
+        <Text style={{color:c.text,fontWeight:'900'}}>{r.chapter_name}</Text>
+        <Text style={{color:c.textSecondary,fontSize:11}}>{r.subject_slug} · {r.predicted_questions} predicted questions · {r.likelihood} likelihood</Text>
+       </View>
+      )):<Text style={{color:c.textSecondary,fontSize:12}}>Prediction records are not available in the published dataset.</Text>}
+     </View>
+    </View>
+   );
   }
   const isChapter=['/analytics','/analytics/pyq-analysis','/cee-outlook','/analytics/exam-difficulty','/chapter-intelligence'].includes(route);
-  const difficultyCounts=annual.filter(x=>(subject==='All'||x.subject===subject)&&x.difficulty_label).reduce((a:any,x:any)=>{const k=String(x.difficulty_label).toLowerCase();a[k]=(a[k]||0)+Number(x.question_count||0);return a},{ });
+  const difficultyCounts=annual.filter(x=>(subject==='All'||x.subject===subject)&&x.difficulty_label).reduce((acc:any,x:any)=>{const key=String(x.difficulty_label).toLowerCase();acc[key]=(acc[key]||0)+Number(x.question_count||0);return acc;},{});
   if(isChapter){
-   const subjects=['Physics','Chemistry','Mathematics'];const list=filtered.sort((a,b)=>Number(b.total_questions_9yr||0)-Number(a.total_questions_9yr||0));
-   return <>{panel('Explore by subject',<View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{(route==='/analytics'||route==='/analytics/pyq-analysis'||route==='/cee-outlook'?[ 'All subjects',...subjects]:subjects).map(s=>pill(s,(s==='All subjects'&&subject==='All')||s===subject,()=>setSubject(s==='All subjects'?'All':s)))}</View>)}{route==='/analytics/exam-difficulty'&&panel('Question difficulty distribution',Object.keys(difficultyCounts).length?<View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{Object.entries(difficultyCounts).map(([k,v]:any)=>card(k,fmt(v),'classified questions'))}</View>:<Text style={{color:c.textSecondary,fontSize:12}}>Difficulty labels are not yet published for this selection.</Text>)}{field('Find a chapter',search,setSearch,'Search chapter name')}{panel(route==='/analytics/exam-difficulty'?'Chapter coverage':'Chapter frequency & weightage',list.length?list.slice(0,100).map((r,i)=><View key={r.chapter+r.subject} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:c.border,gap:5}}><View style={{flexDirection:'row',justifyContent:'space-between',gap:8}}><Text style={{flex:1,color:c.text,fontWeight:'900',fontSize:13}}>{r.chapter}</Text><Text style={{color:c.blue,fontWeight:'900'}}>{fmt(r.total_questions_9yr)} Q</Text></View><Text style={{color:c.textSecondary,fontSize:11}}>{r.subject} · {r.years_appeared||'—'}/9 years · {Number(r.avg_subject_weightage_pct||0).toFixed(1)}% avg subject weightage</Text><View style={{height:6,backgroundColor:c.soft,borderRadius:6,overflow:'hidden'}}><View style={{height:6,width:Math.min(100,Number(r.avg_subject_weightage_pct||0)*4)+'%',backgroundColor:c.green,borderRadius:6}}/></View></View>):<Text style={{color:c.textSecondary,fontSize:12}}>No published chapter records found for this selection.</Text>)}</>;
+   const subjectOptions=['Physics','Chemistry','Mathematics'];
+   const list=filtered.sort((a,b)=>Number(b.total_questions_9yr||0)-Number(a.total_questions_9yr||0));
+   return (
+    <View style={{gap:14}}>
+     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
+      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Explore by subject</Text>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>
+       {(['All subjects',...subjectOptions]).map(name=>pill(name,(name==='All subjects'&&subject==='All')||name===subject,()=>setSubject(name==='All subjects'?'All':name)))}
+      </View>
+      {route==='/analytics/exam-difficulty'?(
+       <View style={{gap:8}}>
+        <Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Question difficulty distribution</Text>
+        {Object.keys(difficultyCounts).length?Object.entries(difficultyCounts).map(([key,value]:any)=>card(key,fmt(value),'classified questions')):<Text style={{color:c.textSecondary,fontSize:12}}>Difficulty labels are not yet published for this selection.</Text>}
+       </View>
+      ):null}
+     </View>
+     {field('Find a chapter',search,setSearch,'Search chapter name')}
+     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:10}}>
+      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>{route==='/analytics/exam-difficulty'?'Chapter coverage':'Chapter frequency & weightage'}</Text>
+      {list.length?list.slice(0,100).map((r,i)=>(
+       <View key={r.chapter+r.subject} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:c.border,gap:5}}>
+        <View style={{flexDirection:'row',justifyContent:'space-between',gap:8}}>
+         <Text style={{flex:1,color:c.text,fontWeight:'900',fontSize:13}}>{r.chapter}</Text>
+         <Text style={{color:c.blue,fontWeight:'900'}}>{fmt(r.total_questions_9yr)} Q</Text>
+        </View>
+        <Text style={{color:c.textSecondary,fontSize:11}}>{r.subject} · {r.years_appeared||'—'}/9 years · {Number(r.avg_subject_weightage_pct||0).toFixed(1)}% avg subject weightage</Text>
+        <View style={{height:6,backgroundColor:c.soft,borderRadius:6,overflow:'hidden'}}>
+         <View style={{height:6,width:Math.min(100,Number(r.avg_subject_weightage_pct||0)*4)+'%',backgroundColor:c.green,borderRadius:6}}/>
+        </View>
+       </View>
+      )):<Text style={{color:c.textSecondary,fontSize:12}}>No published chapter records found for this selection.</Text>}
+     </View>
+    </View>
+   );
   }
-  return <>{panel('Workspace tools',<><Action label="Daily 10 challenge" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/daily-10'}} as never)}/><Action label="Practice Arena" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/practice-arena'}} as never)}/><Action label="Chapter Intelligence" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/chapter-intelligence'}} as never)}/><Action label="Preference Simulator" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-college-path'}} as never)}/><Action label="Admission Navigator" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/admission-navigator'}} as never)}/><Action label="My CEE Journey" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-cee-journey'}} as never)}/><Action label="My CEE Target Card" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-target-card'}} as never)}/></>)}</>;
+  return (
+   <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:10}}>
+    <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Workspace tools</Text>
+    <Action label="Daily 10 challenge" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/daily-10'}} as never)}/>
+    <Action label="Practice Arena" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/practice-arena'}} as never)}/>
+    <Action label="Chapter Intelligence" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/chapter-intelligence'}} as never)}/>
+    <Action label="Preference Simulator" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-college-path'}} as never)}/>
+    <Action label="Admission Navigator" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/admission-navigator'}} as never)}/>
+    <Action label="My CEE Journey" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-cee-journey'}} as never)}/>
+    <Action label="My CEE Target Card" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-target-card'}} as never)}/>
+   </View>
+  );
  };
  const isBusy=loading||refreshing;
  return (
