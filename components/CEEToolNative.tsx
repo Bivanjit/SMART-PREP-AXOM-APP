@@ -77,7 +77,7 @@ export default function CEEToolNative(){
     <View style={{padding:15,borderRadius:18,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:12}}>
      <Text style={{fontSize:15,fontWeight:'900',color:c.text}}>Daily 10 challenge</Text>
      <Text style={{fontSize:12,color:c.textSecondary}}>10 questions · PCM · 40 maximum marks</Text>
-     {qs.map((q:Row,i)=>(
+     {qs.map((q:Row,i:number)=>(
       <View key={q.id||i} style={{paddingVertical:12,borderBottomWidth:1,borderBottomColor:c.border,gap:8}}>
        <Text style={{fontSize:12,fontWeight:'900',color:c.blue}}>Q{i+1} · {q.subject} · {q.chapter||'Mixed practice'}</Text>
        <Text style={{fontSize:14,color:c.text,lineHeight:21}}>{q.prompt}</Text>
@@ -238,7 +238,7 @@ export default function CEEToolNative(){
         </View>
         <Text style={{color:c.textSecondary,fontSize:11}}>{r.subject} · {r.years_appeared||'—'}/9 years · {Number(r.avg_subject_weightage_pct||0).toFixed(1)}% avg subject weightage</Text>
         <View style={{height:6,backgroundColor:c.soft,borderRadius:6,overflow:'hidden'}}>
-         <View style={{height:6,width:Math.min(100,Number(r.avg_subject_weightage_pct||0)*4)+'%',backgroundColor:c.green,borderRadius:6}}/>
+         <View style={{height:6,width:(Math.min(100,Number(r.avg_subject_weightage_pct||0)*4)+'%') as `${number}%`,backgroundColor:c.green,borderRadius:6}}/>
         </View>
        </View>
       )):<Text style={{color:c.textSecondary,fontSize:12}}>No published chapter records found for this selection.</Text>}
