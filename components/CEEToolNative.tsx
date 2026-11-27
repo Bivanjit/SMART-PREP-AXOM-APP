@@ -17,36 +17,46 @@ export default function CEEToolNative(){
  const [loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false),[error,setError]=useState(''),[rows,setRows]=useState<Row[]>([]),[annual,setAnnual]=useState<Row[]>([]),[versions,setVersions]=useState<Row[]>([]),[extra,setExtra]=useState<Row[]>([]);
  const [subject,setSubject]=useState('Physics'),[search,setSearch]=useState(''),[score,setScore]=useState(''),[rank,setRank]=useState(''),[college,setCollege]=useState(''),[branch,setBranch]=useState(''),[category,setCategory]=useState(''),[answer,setAnswer]=useState<Record<string,number>>({}),[submitted,setSubmitted]=useState(false),[submitting,setSubmitting]=useState(false),[challengeResult,setChallengeResult]=useState<Row|null>(null);
  const load=useCallback(async()=>{
-  if(!supabase){setError('SmartPrep database is not configured in this build.');setLoading(false);return;}
+  if(!supabase){setError('SmartPrep database is not configured in this build.');setLoading(false);setRefreshing(false);return;}
   setError('');
+  const request=async(promise:any)=>{
+   const result:any=await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new Error('The SmartPrep database took too long to respond. Check your connection and retry.')),15000);
+    Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value)},reason=>{clearTimeout(timer);reject(reason)});
+   });
+   if(result.error)throw result.error;
+   return result.data;
+  };
   try{
-   const isPrediction=route.includes('prediction');
-   const isAdmission=route.includes('college')||route.includes('cutoff')||route.includes('my-college-path');
-   const jobs:any[]=[
-    supabase.from('analytics_dataset_versions').select('id,version,label,source_description,created_at').eq('dataset_key','cee_paper_analysis').eq('status','published').order('created_at',{ascending:false}).limit(1),
-    supabase.from('cee_chapter_aggregate_analytics').select('subject,chapter,total_questions_9yr,avg_questions_per_year,avg_subject_weightage_pct,avg_overall_weightage_pct,min_questions,max_questions,years_appeared,priority_tier').order('total_questions_9yr',{ascending:false}).limit(300),
-    supabase.from('cee_chapter_year_analytics').select('exam_year,subject,chapter,question_count,weightage_percent_subject,difficulty_label,question_numbers').order('exam_year',{ascending:true}).limit(1000)
-   ];
-   if(isPrediction)jobs.push(supabase.from('prediction_versions').select('id,version,label,model_type,source_description').eq('status','published').order('created_at',{ascending:false}).limit(1));
-   if(isAdmission)jobs.push(supabase.from('engineering_institutions').select('id,name,city').eq('is_active',true).order('name'),supabase.from('engineering_branches').select('id,name').eq('is_active',true).order('name'),supabase.from('admission_categories').select('id,name,code').order('name'));
-   const results=await Promise.all(jobs);
-   for(const r of results){if(r.error)throw r.error;}
-   setVersions(isPrediction?(results[3]?.data||[]):(results[0].data||[]));setRows(results[1].data||[]);setAnnual(results[2].data||[]);
-   const rest=results.slice(3).flatMap((r:any)=>r.data||[]);setExtra(rest);
-   if(isPrediction&&results[3]?.data?.[0]){const {data,error}=await supabase.from('chapter_predictions').select('subject_slug,chapter_name,predicted_questions,likelihood,confidence,rationale').eq('prediction_version_id',results[3].data[0].id).order('predicted_questions',{ascending:false});if(error)throw error;setExtra(data||[]);}
-   if(route==='/daily-10'){
-    const {data,error}=await supabase.rpc('get_website_daily_challenge');if(error)throw error;
-    if(!data)throw new Error("Today's Daily 10 is not published yet.");
-    const qs=Array.isArray(data.questions)?data.questions:[];
-    if(qs.length!==10)throw new Error("Today's Daily 10 is being prepared. Please try again shortly.");
-    setExtra([{challenge:data,questions:qs}]);
-   }
-   if(route==='/predictor/rank'||route==='/predictor/marks-to-rank'){
-    const {data,error}=await supabase.from('cee_score_rank_points').select('exam_year,total_marks,score,merit_rank').order('exam_year',{ascending:false}).limit(1000);if(error)throw error;setExtra(data||[]);
-   }
-   if(route==='/analytics/college-cutoff-analysis'||route==='/predictor/college'||route==='/my-college-path'){
-    const {data,error}=await supabase.from('admission_cutoffs').select('admission_year,opening_rank,closing_rank,quota_code,verification_status,engineering_institutions(name),engineering_branches(name),admission_categories(name)').eq('verification_status','verified').order('admission_year',{ascending:false}).limit(500);
-    if(error)throw error;setExtra(prev=>[...prev,...(data||[])]);
+   const chapterRoutes=['/analytics','/analytics/pyq-analysis','/cee-outlook','/analytics/exam-difficulty','/chapter-intelligence'];
+   if(chapterRoutes.includes(route)){
+    const [version,chapterRows,yearRows]=await Promise.all([
+     request(supabase.from('analytics_dataset_versions').select('id,version,label,source_description,created_at').eq('dataset_key','cee_paper_analysis').eq('status','published').order('created_at',{ascending:false}).limit(1)),
+     request(supabase.from('cee_chapter_aggregate_analytics').select('subject,chapter,total_questions_9yr,avg_questions_per_year,avg_subject_weightage_pct,avg_overall_weightage_pct,min_questions,max_questions,years_appeared,priority_tier').order('total_questions_9yr',{ascending:false}).limit(300)),
+     request(supabase.from('cee_chapter_year_analytics').select('exam_year,subject,chapter,question_count,weightage_percent_subject,difficulty_label,question_numbers').order('exam_year',{ascending:true}).limit(1000))
+    ]);
+    setVersions(version||[]);setRows(chapterRows||[]);setAnnual(yearRows||[]);setExtra([]);
+   }else if(route==='/analytics/cee-2027-predictions'){
+    const published=await request(supabase.from('prediction_versions').select('id,version,label,model_type,source_description').eq('status','published').order('created_at',{ascending:false}).limit(1));
+    setVersions(published||[]);setRows([]);setAnnual([]);
+    if(published?.[0]){
+     const predictions=await request(supabase.from('chapter_predictions').select('subject_slug,chapter_name,predicted_questions,likelihood,confidence,rationale').eq('prediction_version_id',published[0].id).order('predicted_questions',{ascending:false}));
+     setExtra(predictions||[]);
+    }else setExtra([]);
+   }else if(route==='/predictor/rank'||route==='/predictor/marks-to-rank'){
+    const points=await request(supabase.from('cee_score_rank_points').select('exam_year,total_marks,score,merit_rank').order('exam_year',{ascending:false}).limit(1000));
+    setExtra(points||[]);setRows([]);setAnnual([]);setVersions([]);
+   }else if(['/analytics/college-cutoff-analysis','/predictor/college','/my-college-path'].includes(route)){
+    const cutoffs=await request(supabase.from('admission_cutoffs').select('admission_year,opening_rank,closing_rank,quota_code,verification_status,engineering_institutions(name),engineering_branches(name),admission_categories(name)').eq('verification_status','verified').order('admission_year',{ascending:false}).limit(500));
+    setExtra(cutoffs||[]);setRows([]);setAnnual([]);setVersions([]);
+   }else if(route==='/daily-10'){
+    const challenge=await request(supabase.rpc('get_website_daily_challenge'));
+    if(!challenge)throw new Error("Today's Daily 10 is not published yet.");
+    const questions=Array.isArray(challenge.questions)?challenge.questions:[];
+    if(questions.length!==10)throw new Error("Today's Daily 10 is being prepared. Please try again shortly.");
+    setExtra([{challenge,questions}]);setRows([]);setAnnual([]);setVersions([]);
+   }else{
+    setExtra([]);setRows([]);setAnnual([]);setVersions([]);
    }
   }catch(e:any){setError(e?.message||'Could not load CEE data. Please retry.');}
   finally{setLoading(false);setRefreshing(false);}
