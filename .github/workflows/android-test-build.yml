@@ -8,6 +8,7 @@ on:
     branches:
       - feat/centralized-membership-leaderboards
       - hotfix/v5.0.0-session-security-maintenance
+      - feat/v5.1.0-cee-intelligence-workspace
 permissions:
   contents: read
 jobs:
@@ -70,7 +71,7 @@ jobs:
       - name: Upload test APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: smartprep-axom-pr20-test-${{ github.sha }}
+          name: smartprep-axom-v5.1.0-preview-${{ github.sha }}
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
