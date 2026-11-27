@@ -69,6 +69,24 @@ export default function Home(){
    <QuickAction icon="document-text-outline" title="PYQs" accent="#3657A7" onPress={()=>router.push('/pyqs')}/>
    <QuickAction icon="play-circle-outline" title="Lectures" accent="#7C3AED" onPress={()=>router.push('/(tabs)/lectures')}/>
   </View>
+
+  <View style={{gap:10}}>
+   <SectionTitle title="CEE Intelligence & Workspace"/>
+   <View style={{flexDirection:'row',gap:10}}>
+    <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/cee-intelligence')}} accessibilityRole="button" style={({pressed})=>({flex:1,minHeight:112,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:17,padding:13,gap:8,opacity:pressed?.9:1,transform:[{scale:pressed?.985:1}],shadowColor:c.blue,shadowOpacity:.07,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:2})}>
+     <View style={{width:38,height:38,borderRadius:12,backgroundColor:c.soft,alignItems:'center',justifyContent:'center'}}><Ionicons name="analytics-outline" size={21} color={c.blue}/></View>
+     <Text style={{fontSize:12,fontWeight:'900',color:c.text}}>CEE Intelligence</Text>
+     <Text style={{fontSize:10,lineHeight:15,color:c.textSecondary}}>Trends, predictions & rank tools</Text>
+     <Ionicons name="arrow-forward" size={16} color={c.blue} style={{position:'absolute',right:13,top:17}}/>
+    </Pressable>
+    <Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/cee-workspace')}} accessibilityRole="button" style={({pressed})=>({flex:1,minHeight:112,backgroundColor:c.card,borderWidth:1,borderColor:c.border,borderRadius:17,padding:13,gap:8,opacity:pressed?.9:1,transform:[{scale:pressed?.985:1}],shadowColor:c.green,shadowOpacity:.07,shadowRadius:9,shadowOffset:{width:0,height:3},elevation:2})}>
+     <View style={{width:38,height:38,borderRadius:12,backgroundColor:c.chemistryBg,alignItems:'center',justifyContent:'center'}}><Ionicons name="briefcase-outline" size={21} color={c.green}/></View>
+     <Text style={{fontSize:12,fontWeight:'900',color:c.text}}>CEE Workspace</Text>
+     <Text style={{fontSize:10,lineHeight:15,color:c.textSecondary}}>Daily 10, planning & PYQ tools</Text>
+     <Ionicons name="arrow-forward" size={16} color={c.green} style={{position:'absolute',right:13,top:17}}/>
+    </Pressable>
+   </View>
+  </View>
   {!data.premium&&!premiumDismissed?<Pressable onPress={()=>{void Haptics.selectionAsync();router.push('/premium')}} style={({pressed})=>({backgroundColor:c.surfaceElevated,borderWidth:1,borderColor:'#E9C77D',borderRadius:17,padding:14,flexDirection:'row',alignItems:'center',gap:12,shadowColor:c.amber,shadowOpacity:.2,shadowRadius:12,shadowOffset:{width:0,height:4},elevation:4,opacity:pressed?.9:1,transform:[{scale:pressed?.985:1}]})}>
    <View style={{width:42,height:42,borderRadius:14,backgroundColor:c.surfaceElevated,alignItems:'center',justifyContent:'center'}}><Ionicons name="trophy" size={22} color="#A16207"/></View>
    <View style={{flex:1,gap:3}}><Text style={{fontSize:13,fontWeight:'900',color:c.text}}>Upgrade to Premium</Text><Text style={{fontSize:11,color:c.textSecondary}}>Unlock full courses, PYQs, mock tests & more.</Text></View>
