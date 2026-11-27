@@ -90,9 +90,39 @@ export default function CEEToolNative(){
   return <>{panel('Workspace tools',<><Action label="Daily 10 challenge" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/daily-10'}} as never)}/><Action label="Practice Arena" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/practice-arena'}} as never)}/><Action label="Chapter Intelligence" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/chapter-intelligence'}} as never)}/><Action label="Preference Simulator" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-college-path'}} as never)}/><Action label="Admission Navigator" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/admission-navigator'}} as never)}/><Action label="My CEE Journey" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-cee-journey'}} as never)}/><Action label="My CEE Target Card" colors={c} onPress={()=>router.push({pathname:'/cee-tool',params:{path:'/my-target-card'}} as never)}/></>)}</>;
  };
  const isBusy=loading||refreshing;
- return <View style={{flex:1,backgroundColor:c.bg}}><Stack.Screen options={{title,headerStyle:{backgroundColor:c.bg},headerTintColor:c.text}}/><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}><ScrollView contentContainerStyle={{padding:16,paddingBottom:36,gap:14}} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={c.green}/>}>
-  <View style={{gap:7,paddingBottom:4}}><Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.5,color:c.green}}>SMARTPREP AXOM · ASSAM CEE 2027</Text><Text style={{fontSize:26,fontWeight:'900',letterSpacing:-.6,color:c.text}}>{title}</Text><Text style={{fontSize:12,lineHeight:19,color:c.textSecondary}}>{route.startsWith('/analytics')||route==='/cee-outlook'||route==='/chapter-intelligence'?'Explore published Assam CEE historical analysis, chapter patterns and revision signals.':'Your native SmartPrep CEE preparation and admission-planning workspace.'}</Text></View>
-  <View style={{padding:12,borderRadius:14,backgroundColor:c.surfaceElevated,flexDirection:'row',alignItems:'center',gap:9}}><Ionicons name="cloud-done-outline" size={19} color={c.green}/><Text style={{flex:1,fontSize:10,lineHeight:16,color:c.textSecondary}}>Native app interface · Shared SmartPrep Supabase data · {mode==='dark'?'Dark':'Light'} theme</Text></View>
-  {isBusy?<View style={{padding:30,alignItems:'center',gap:10}}><ActivityIndicator color={c.green} size="large"/><Text style={{color:c.textSecondary,fontSize:12}}>Loading SmartPrep data…</Text></View>:error?<View style={{padding:16,borderRadius:16,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:9}}><Ionicons name="cloud-offline-outline" size={24} color={c.red}/><Text style={{color:c.text,fontWeight:'900'}}>Couldn't load this tool</Text><Text style={{color:c.textSecondary,fontSize:12,lineHeight:18}}>{error}</Text><Action label="Retry" colors={c} onPress={refresh} icon="refresh"/></View>:<>{(route==='/analytics'||route==='/analytics/pyq-analysis'||route==='/cee-outlook'||route==='/chapter-intelligence')&&<View style={{flexDirection:'row',flexWrap:'wrap',gap:9}}>{card('Chapters',fmt(rows.length),'Published aggregate rows')}{card('Historical questions',fmt(total),'Across selected chapters')}</View>}{body()}</>}
- </ScrollView></KeyboardAvoidingView></View>;
+ return (
+  <View style={{flex:1,backgroundColor:c.bg}}>
+   <Stack.Screen options={{title,headerStyle:{backgroundColor:c.bg},headerTintColor:c.text}}/>
+   <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}>
+    <ScrollView contentContainerStyle={{padding:16,paddingBottom:36,gap:14}} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={c.green}/>}>
+     <View style={{gap:7,paddingBottom:4}}>
+      <Text style={{fontSize:10,fontWeight:'900',letterSpacing:1.5,color:c.green}}>SMARTPREP AXOM · ASSAM CEE 2027</Text>
+      <Text style={{fontSize:26,fontWeight:'900',letterSpacing:-.6,color:c.text}}>{title}</Text>
+      <Text style={{fontSize:12,lineHeight:19,color:c.textSecondary}}>Explore published Assam CEE data, chapter patterns and preparation tools.</Text>
+     </View>
+     <View style={{padding:12,borderRadius:14,backgroundColor:c.surfaceElevated,flexDirection:'row',alignItems:'center',gap:9}}>
+      <Ionicons name="cloud-done-outline" size={19} color={c.green}/>
+      <Text style={{flex:1,fontSize:10,lineHeight:16,color:c.textSecondary}}>Native app interface · Shared SmartPrep Supabase data · {mode==='dark'?'Dark':'Light'} theme</Text>
+     </View>
+     {isBusy ? (
+      <View style={{padding:30,alignItems:'center',gap:10}}><ActivityIndicator color={c.green} size="large"/><Text style={{color:c.textSecondary,fontSize:12}}>Loading SmartPrep data…</Text></View>
+     ) : error ? (
+      <View style={{padding:16,borderRadius:16,backgroundColor:c.card,borderWidth:1,borderColor:c.border,gap:9}}>
+       <Ionicons name="cloud-offline-outline" size={24} color={c.red}/>
+       <Text style={{color:c.text,fontWeight:'900'}}>Unable to load this tool</Text>
+       <Text style={{color:c.textSecondary,fontSize:12,lineHeight:18}}>{error}</Text>
+       <Action label="Retry" colors={c} onPress={refresh} icon="refresh"/>
+      </View>
+     ) : (
+      <View style={{gap:14}}>
+       {(route==='/analytics'||route==='/analytics/pyq-analysis'||route==='/cee-outlook'||route==='/chapter-intelligence') ? (
+        <View style={{flexDirection:'row',flexWrap:'wrap',gap:9}}>{card('Chapters',fmt(rows.length),'Published aggregate rows')}{card('Historical questions',fmt(total),'Across selected chapters')}</View>
+       ) : null}
+       {body()}
+      </View>
+     )}
+    </ScrollView>
+   </KeyboardAvoidingView>
+  </View>
+ );
 }
