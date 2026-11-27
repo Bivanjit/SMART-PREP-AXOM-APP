@@ -69,12 +69,19 @@ jobs:
           python -m pip install --disable-pip-version-check Pillow
           python <<'PY'
           from pathlib import Path
-          from PIL import Image
+          from PIL import Image, ImageFile
 
-          for path in Path("assets").glob("*.png"):
+          # Some source PNGs contain damaged/truncated IDAT data. Recover
+          # decodable pixels and rewrite clean PNGs before Expo/Jimp reads them.
+          ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+          for path in sorted(Path("assets").glob("*.png")):
+              print(f"Normalizing {path}", flush=True)
               with Image.open(path) as image:
-                  image.convert("RGBA").save(path, format="PNG", optimize=False)
-              print(f"Normalized {path}")
+                  image.load()
+                  clean = image.convert("RGBA")
+                  clean.save(path, format="PNG", optimize=False)
+              print(f"Normalized {path}: {clean.size}", flush=True)
           PY
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
