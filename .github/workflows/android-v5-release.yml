@@ -1,6 +1,6 @@
-name: SmartPrep Axom Android V5.0.0 Production Release
+name: SmartPrep Axom Android V5.1.0 Production Release
 concurrency:
-  group: android-v5-production-release
+  group: android-v5-1-production-release
   cancel-in-progress: false
 on:
   push:
@@ -23,7 +23,7 @@ permissions:
   contents: write
 jobs:
   build-and-release:
-    name: Build and publish Android V5.0.0
+    name: Build and publish Android V5.1.0
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout main
@@ -32,8 +32,8 @@ jobs:
         run: |
           node <<'NODE'
           const app = require('./app.json').expo;
-          if (app.version !== '5.0.0') throw new Error('Refusing release: expected versionName 5.0.0, got ' + app.version);
-          if (app.android?.versionCode !== 50001) throw new Error('Refusing release: expected versionCode 50001, got ' + app.android?.versionCode);
+          if (app.version !== '5.1.0') throw new Error('Refusing release: expected versionName 5.1.0, got ' + app.version);
+          if (app.android?.versionCode !== 51000) throw new Error('Refusing release: expected versionCode 51000, got ' + app.android?.versionCode);
           console.log('Verified SmartPrep Axom ' + app.version + ' (versionCode ' + app.android.versionCode + ')');
           NODE
       - name: Set up Node.js
@@ -90,31 +90,31 @@ jobs:
         run: |
           test -s android/app/build/outputs/apk/release/app-release.apk
           ls -lh android/app/build/outputs/apk/release/app-release.apk
-      - name: Publish GitHub Release V5.0.0
+      - name: Publish GitHub Release V5.1.0
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v5.0.0-hotfix1"
+          TAG="v5.1.0"
           APK="android/app/build/outputs/apk/release/app-release.apk"
-          NOTES="SmartPrep Axom Android 5.0.0 security hotfix
+          NOTES="SmartPrep Axom Android 5.1.0
 
-          - Correct installed-version comparison for update prompts
-          - Enforce one active app login session per account
-          - Add account and installation blocking controls
-          - Add global maintenance mode controls
-          - Preserve Android versionName 5.0.0 with incremented versionCode
+          - Add CEE Intelligence and CEE Workspace entry points to the app home
+          - Add native-themed navigation to all published website CEE tools
+          - Reuse the live website and shared Supabase data for CEE Intelligence and Workspace
+          - Correct Android adaptive launcher icon sizing using the supplied SmartPrep logo
+          - Preserve existing V5.0.0 learning, membership, mock-test and security features
 
-          Android versionName: 5.0.0
-          Android versionCode: 50001"
+          Android versionName: 5.1.0
+          Android versionCode: 51000"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Refusing to overwrite existing $TAG release."
             exit 1
           fi
-          gh release create "$TAG" "$APK#SmartPrep-Axom-5.0.0.apk" --title "SmartPrep Axom 5.0.0" --notes "$NOTES" --latest --target "$GITHUB_SHA"
+          gh release create "$TAG" "$APK#SmartPrep-Axom-5.1.0.apk" --title "SmartPrep Axom 5.1.0" --notes "$NOTES" --latest --target "$GITHUB_SHA"
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: smartprep-axom-v5.0.0-production
+          name: smartprep-axom-v5.1.0-production
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
