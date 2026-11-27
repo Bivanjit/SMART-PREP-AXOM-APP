@@ -21,8 +21,6 @@ export const CEE_INTELLIGENCE_TOOLS: CeeTool[] = [
   { path: '/predictor/marks-to-rank', title: 'Marks-to-Rank', description: 'Compare expected marks with historical rank and cutoff references.', tag: 'PREDICTOR', icon: 'calculator-outline' },
   { path: '/predictor/college', title: 'College Predictor', description: 'Explore indicative college and branch options for your expected rank.', tag: 'ADMISSIONS', icon: 'school-outline' },
   { path: '/analytics/college-cutoff-analysis', title: 'College Cutoff Explorer', description: 'Compare verified closing-rank references by college, branch and category.', tag: 'CUTOFFS', icon: 'business-outline' },
-  { path: '/exam-guide', title: 'CEE Exam Guide', description: 'Read the exam guide, pattern, syllabus and preparation references.', tag: 'GUIDE', icon: 'document-text-outline' },
-  { path: '/previous-papers', title: 'PYQ Archive', description: 'Browse available Assam CEE previous-year paper resources.', tag: 'PREVIOUS PAPERS', icon: 'book-outline' },
 ];
 
 export const CEE_WORKSPACE_TOOLS: CeeTool[] = [
@@ -35,7 +33,6 @@ export const CEE_WORKSPACE_TOOLS: CeeTool[] = [
   { path: '/admission-navigator', title: 'Admission Navigator', description: 'Prepare counselling documents and check official admission sources.', tag: 'ADMISSIONS', icon: 'compass-outline' },
   { path: '/my-cee-journey', title: 'My CEE Journey', description: 'Track study goals, sessions, weekly effort and revision notes.', tag: 'STUDY PLANNER', icon: 'trophy-outline' },
   { path: '/my-target-card', title: 'My CEE Target Card', description: 'Create and share your personal CEE target card.', tag: 'MY TARGET', icon: 'flag-outline' },
-  { path: '/question-finder', title: 'Question Finder', description: 'Search available 2018–2026 question records by chapter, topic and year.', tag: 'QUESTION ARCHIVE', icon: 'search-outline' },
 ];
 
 export const CEE_ALL_TOOLS = [...CEE_INTELLIGENCE_TOOLS, ...CEE_WORKSPACE_TOOLS];
