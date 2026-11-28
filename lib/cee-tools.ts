@@ -30,6 +30,7 @@ export const CEE_WORKSPACE_TOOLS: CeeTool[] = [
   { path: '/chapter-intelligence', title: 'Chapter Intelligence', description: 'Explore chapter frequency, weightage, difficulty and yearly trends.', tag: 'PYQ INTELLIGENCE', icon: 'bar-chart-outline' },
   { path: '/cee-outlook', title: 'CEE Chapter Outlook', description: 'Plan revision using historical chapter appearances and priorities.', tag: 'REVISION', icon: 'trending-up-outline' },
   { path: '/my-college-path', title: 'Preference Simulator', description: 'Build a ranked college and branch preference list against verified cutoffs.', tag: 'ELIGIBILITY', icon: 'git-branch-outline' },
+  { path: '/cee-calendar', title: 'Exam & Admission Calendar', description: 'Check official Assam CEE application, exam, result and counselling dates.', tag: 'IMPORTANT DATES', icon: 'calendar-outline' },
   { path: '/admission-navigator', title: 'Admission Navigator', description: 'Prepare counselling documents and check official admission sources.', tag: 'ADMISSIONS', icon: 'compass-outline' },
   { path: '/my-cee-journey', title: 'My CEE Journey', description: 'Track study goals, sessions, weekly effort and revision notes.', tag: 'STUDY PLANNER', icon: 'trophy-outline' },
   { path: '/my-target-card', title: 'My CEE Target Card', description: 'Create and share your personal CEE target card.', tag: 'MY TARGET', icon: 'flag-outline' },
